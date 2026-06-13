@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Separabilidad Lineal del Perceptrón</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        // Configuración de Tailwind para soportar modo oscuro por clases
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+        
+        /* Suavizar transiciones de color de tema */
+        * {
+            transition: background-color 0.3s ease, border-color 0.3s ease, text-color 0.3s ease;
+        }
+
+        /* Deslizadores personalizados */
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #6366f1;
+            cursor: pointer;
+            box-shadow: 0 0 8px rgba(99, 102, 241, 0.5);
+        }
+        
+        .dark input[type="range"]::-webkit-slider-thumb {
+            background: #818cf8;
+            box-shadow: 0 0 12px rgba(129, 140, 248, 0.6);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 min-h-screen flex flex-col">
+
+    <!-- BARRA DE NAVEGACIÓN / HEADER -->
+    <header class="border-b border-slate-200 bg-white/80 dark:border-slate-800 dark:bg-slate-900/80 backdrop-blur sticky top-0 z-50 px-6 py-4">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+                <div class="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 text-xs font-semibold tracking-wider uppercase">
+                    <span class="h-2.5 w-2.5 rounded-full bg-indigo-500 animate-pulse"></span>
+                    Demostración de Separabilidad Lineal
+                </div>
+                <h1 class="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white mt-1">
+                    El Límite del Perceptrón: AND, OR y XOR
+                </h1>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Visualización geométrica del teorema de Minsky & Papert (1969)</p>
+            </div>
+            
+            <!-- CONTROLES GLOBALES (Tema, Reset y Link TensorFlow) -->
+            <div class="flex items-center flex-wrap gap-3 self-end sm:self-auto">
+                <!-- Botón de Enlace al Simulador TensorFlow -->
+                <a href="https://playground.tensorflow.org/#activation=tanh&batchSize=10&dataset=circle&regDataset=reg-plane&learningRate=0.03&regularizationRate=0&noise=0&networkShape=4,2&seed=0.91944&showTestData=false&discretize=false&percTrainData=50&x=true&y=true&xTimesY=false&xSquared=false&ySquared=false&cosX=false&sinX=false&cosY=false&sinY=false&collectStats=false&problem=classification&initZero=false&hideText=false" 
+                   target="_blank" 
+                   rel="noopener noreferrer" 
+                   class="px-4 py-2.5 rounded-lg border border-amber-200 dark:border-amber-900/50 bg-amber-50 dark:bg-amber-950/20 text-xs font-semibold hover:bg-amber-100 dark:hover:bg-amber-950/40 transition flex items-center gap-2 text-amber-700 dark:text-amber-400 shadow-sm">
+                    <i data-lucide="external-link" class="w-4 h-4"></i>
+                    Simulador TensorFlow
+                </a>
+
+                <!-- Botón de Tema -->
+                <button onclick="toggleTheme()" class="p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition" aria-label="Cambiar Tema">
+                    <i id="theme-icon" data-lucide="sun" class="w-5 h-5 hidden dark:block text-amber-400"></i>
+                    <i id="theme-icon-light" data-lucide="moon" class="w-5 h-5 block dark:hidden text-indigo-600"></i>
+                </button>
+
+                <!-- Botón de Reinicio -->
+                <button onclick="resetSimulator()" class="px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 transition flex items-center gap-2 text-slate-700 dark:text-slate-300">
+                    <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                    Reiniciar Todo
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- CONTENEDOR DE LA APLICACIÓN -->
+    <main class="max-w-7xl mx-auto p-4 md:p-6 flex-grow grid grid-cols-1 lg:grid-cols-12 gap-6 w-full">
+        
+        <!-- PANEL DE CONTROL E INVESTIGACIÓN (Col: 4) -->
+        <section class="lg:col-span-4 flex flex-col gap-6">
+            
+            <!-- SELECCIÓN DE COMPUERTA / OPERACIÓN -->
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm">
+                <h2 class="font-bold text-slate-800 dark:text-slate-200 text-sm uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <i data-lucide="git-merge" class="w-4 h-4 text-indigo-500"></i>
+                    1. Operación Lógica
+                </h2>
+                <div class="grid grid-cols-3 gap-2">
+                    <button id="btn-gate-and" onclick="selectGate('and')" class="py-2.5 px-3 rounded-lg border text-sm font-bold transition flex flex-col items-center gap-1">
+                        <span class="text-base">AND</span>
+                        <span class="text-[10px] font-normal text-slate-400">Separable</span>
+                    </button>
+                    <button id="btn-gate-or" onclick="selectGate('or')" class="py-2.5 px-3 rounded-lg border text-sm font-bold transition flex flex-col items-center gap-1">
+                        <span class="text-base">OR</span>
+                        <span class="text-[10px] font-normal text-slate-400">Separable</span>
+                    </button>
+                    <button id="btn-gate-xor" onclick="selectGate('xor')" class="py-2.5 px-3 rounded-lg border text-sm font-bold transition flex flex-col items-center gap-1">
+                        <span class="text-base text-rose-500">XOR</span>
+                        <span class="text-[10px] font-normal text-rose-400">No Lineal</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- PARÁMETROS DEL MODELO (Pesos y Sesgo) -->
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm">
+                <h2 class="font-bold text-slate-800 dark:text-slate-200 text-sm uppercase tracking-wider mb-4 flex items-center gap-2">
+                    <i data-lucide="sliders" class="w-4 h-4 text-emerald-500"></i>
+                    2. Parámetros de la Neurona
+                </h2>
+
+                <!-- Input interactivo rápido de entradas activas -->
+                <div class="mb-4 bg-slate-100 dark:bg-slate-950 p-3 rounded-lg border border-slate-200 dark:border-slate-800">
+                    <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-2">Comprobar Señales de Entrada:</span>
+                    <div class="flex justify-around gap-2">
+                        <button id="test-x1" onclick="toggleSignal(1)" class="px-4 py-2 rounded border text-xs font-semibold flex items-center gap-1.5 transition">
+                            <span>x₁ =</span> <span id="val-test-x1" class="font-mono text-sm">0</span>
+                        </button>
+                        <button id="test-x2" onclick="toggleSignal(2)" class="px-4 py-2 rounded border text-xs font-semibold flex items-center gap-1.5 transition">
+                            <span>x₂ =</span> <span id="val-test-test-x2" class="font-mono text-sm">0</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <div class="flex justify-between text-xs mb-1">
+                            <span class="text-slate-500 dark:text-slate-400 font-semibold">Peso w₁ (Relevancia de x₁)</span>
+                            <span id="label-w1" class="font-mono text-indigo-600 dark:text-indigo-400 font-bold">0.8</span>
+                        </div>
+                        <input type="range" id="param-w1" min="-2.0" max="2.0" step="0.1" value="0.8" oninput="updateParameters()" class="w-full accent-indigo-500 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer">
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between text-xs mb-1">
+                            <span class="text-slate-500 dark:text-slate-400 font-semibold">Peso w₂ (Relevancia de x₂)</span>
+                            <span id="label-w2" class="font-mono text-indigo-600 dark:text-indigo-400 font-bold">0.8</span>
+                        </div>
+                        <input type="range" id="param-w2" min="-2.0" max="2.0" step="0.1" value="0.8" oninput="updateParameters()" class="w-full accent-indigo-500 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer">
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between text-xs mb-1">
+                            <span class="text-slate-500 dark:text-slate-400 font-semibold">Sesgo b (Umbral de disparo)</span>
+                            <span id="label-b" class="font-mono text-indigo-600 dark:text-indigo-400 font-bold">-1.2</span>
+                        </div>
+                        <input type="range" id="param-b" min="-2.0" max="2.0" step="0.1" value="-1.2" oninput="updateParameters()" class="w-full accent-indigo-500 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer">
+                    </div>
+                </div>
+            </div>
+
+            <!-- MOTOR DE ENTRENAMIENTO -->
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm">
+                <div class="flex justify-between items-center mb-3">
+                    <h2 class="font-bold text-slate-800 dark:text-slate-200 text-sm uppercase tracking-wider flex items-center gap-2">
+                        <i data-lucide="zap" class="w-4 h-4 text-amber-500"></i>
+                        3. Entrenamiento Automático
+                    </h2>
+                    <span id="badge-epoch" class="text-[10px] font-mono bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700">Época: 0</span>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2 mb-4">
+                    <button onclick="executeSingleEpoch()" class="py-2 px-3 border border-indigo-200 dark:border-indigo-900/40 bg-indigo-50 dark:bg-indigo-950/20 text-indigo-700 dark:text-indigo-300 rounded-lg text-xs font-semibold hover:bg-indigo-100 dark:hover:bg-indigo-950/40 transition flex items-center justify-center gap-1.5">
+                        <i data-lucide="chevrons-right" class="w-4 h-4"></i>
+                        Una Época
+                    </button>
+                    <button id="btn-play-train" onclick="toggleTrainingLoop()" class="py-2 px-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold transition flex items-center justify-center gap-1.5 shadow-md shadow-indigo-500/10">
+                        <i id="icon-play-train" data-lucide="play" class="w-4 h-4"></i>
+                        <span id="txt-play-train">Entrenar</span>
+                    </button>
+                </div>
+
+                <!-- Tasa de aprendizaje -->
+                <div class="flex justify-between items-center text-xs mb-3">
+                    <span class="text-slate-500 dark:text-slate-400">Tasa de Aprendizaje (η)</span>
+                    <select id="select-lr" class="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded p-1 text-xs focus:outline-none focus:border-indigo-500">
+                        <option value="0.05">0.05</option>
+                        <option value="0.1" selected>0.10</option>
+                        <option value="0.2">0.20</option>
+                        <option value="0.5">0.50</option>
+                    </select>
+                </div>
+
+                <!-- Log simplificado de errores -->
+                <div class="bg-slate-50 dark:bg-slate-950 border border-slate-150 dark:border-slate-850 rounded-lg p-3 text-[11px] font-mono space-y-1" id="training-log">
+                    <div class="text-slate-400 dark:text-slate-500">Esperando inicio...</div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- PANEL DE VISUALIZACIÓN EN TIEMPO REAL (Col: 8) -->
+        <section class="lg:col-span-8 flex flex-col gap-6">
+            
+            <!-- CONTENEDOR DE GRÁFICO E IMPOSIBILIDAD -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 md:p-6 shadow-sm">
+                
+                <!-- CANVAS DE PLANO CARTESIANO 2D -->
+                <div class="flex flex-col items-center justify-between">
+                    <div class="w-full">
+                        <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm mb-1 flex items-center gap-1.5">
+                            <i data-lucide="area-chart" class="w-4 h-4 text-indigo-500"></i>
+                            Frontera de Separación 2D
+                        </h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">El fondo coloreado ilustra la clasificación de todo el plano.</p>
+                    </div>
+
+                    <!-- Contenedor del Canvas sin elementos absolutos encimados -->
+                    <div class="bg-slate-100 dark:bg-slate-950 rounded-lg p-3 border border-slate-200 dark:border-slate-800 w-full flex flex-col items-center">
+                        <canvas id="boundary-canvas" width="280" height="280" class="max-w-full block rounded"></canvas>
+                    </div>
+                    
+                    <!-- Leyenda gráfica recolocada abajo (Previene traslapes en el plano) -->
+                    <div class="w-full mt-3 bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-850 p-3 rounded-lg flex flex-wrap justify-center gap-x-4 gap-y-1.5 text-[10px] text-slate-600 dark:text-slate-400 shadow-inner">
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-2.5 h-2.5 rounded-full bg-indigo-500 inline-block"></span> Clase 1 (Salida Activa)
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block"></span> Clase 0 (Salida Inactiva)
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-4 h-0.5 bg-emerald-500 inline-block"></span> Hiperplano: w · x + b = 0
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ESQUEMA DINÁMICO DE LA NEURONA (SVG) -->
+                <div class="flex flex-col justify-between">
+                    <div>
+                        <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm mb-1 flex items-center gap-1.5">
+                            <i data-lucide="cpu" class="w-4 h-4 text-emerald-500"></i>
+                            Estructura de la Neurona
+                        </h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">Señales, pesos y salida en tiempo real.</p>
+                    </div>
+
+                    <div class="bg-slate-100 dark:bg-slate-950 rounded-lg p-4 border border-slate-200 dark:border-slate-800 h-64 flex items-center justify-center relative">
+                        <svg id="neuron-diagram" viewBox="0 0 320 200" class="w-full h-full">
+                            <!-- Conexiones -->
+                            <line id="line-w1" x1="40" y1="50" x2="150" y2="100" stroke="#6366f1" stroke-width="3" />
+                            <line id="line-w2" x1="40" y1="150" x2="150" y2="100" stroke="#6366f1" stroke-width="3" />
+                            <line id="line-b" x1="100" y1="20" x2="150" y2="100" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="2,2" />
+                            <line x1="190" y1="100" x2="260" y2="100" stroke="#10b981" stroke-width="3" />
+
+                            <!-- Nodos de Entrada -->
+                            <circle id="svg-node-x1" cx="40" cy="50" r="14" fill="#6366f1" />
+                            <text x="40" y="53" font-size="10" fill="#fff" text-anchor="middle" font-weight="bold" class="font-mono">x₁</text>
+
+                            <circle id="svg-node-x2" cx="40" cy="150" r="14" fill="#6366f1" />
+                            <text x="40" y="153" font-size="10" fill="#fff" text-anchor="middle" font-weight="bold" class="font-mono">x₂</text>
+
+                            <circle cx="100" cy="20" r="10" fill="#475569" />
+                            <text x="100" y="23" font-size="8" fill="#fff" text-anchor="middle" class="font-mono">b</text>
+
+                            <!-- Valores de Pesos (Etiquetas) -->
+                            <rect x="75" y="60" width="30" height="13" rx="3" fill="#1e293b" />
+                            <text id="svg-txt-w1" x="90" y="70" font-size="8" fill="#38bdf8" text-anchor="middle" font-weight="bold" class="font-mono">0.8</text>
+
+                            <rect x="75" y="125" width="30" height="13" rx="3" fill="#1e293b" />
+                            <text id="svg-txt-w2" x="90" y="135" font-size="8" fill="#38bdf8" text-anchor="middle" font-weight="bold" class="font-mono">0.8</text>
+
+                            <!-- Núcleo de Suma -->
+                            <circle cx="170" cy="100" r="20" fill="#0f172a" stroke="#475569" stroke-width="2" />
+                            <text x="170" y="104" font-size="12" fill="#f1f5f9" text-anchor="middle" font-weight="bold" class="font-mono">∑</text>
+
+                            <!-- Nodo de Activación Step / Escalón -->
+                            <circle id="svg-node-act" cx="240" cy="100" r="16" fill="#10b981" />
+                            <text x="240" y="104" font-size="10" fill="#fff" text-anchor="middle" font-weight="bold" class="font-mono">f(z)</text>
+
+                            <!-- Nodo de Salida -->
+                            <circle id="svg-node-y" cx="295" cy="100" r="10" fill="#10b981" />
+                            <text id="svg-txt-y" x="295" y="103" font-size="8" fill="#fff" text-anchor="middle" font-weight="bold" class="font-mono">0</text>
+                        </svg>
+
+                        <!-- Panel flotante del cálculo matemático actual -->
+                        <div class="absolute top-2 right-2 bg-white/90 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded px-2 py-1 text-[10px] space-y-0.5 shadow-sm font-mono">
+                            <div class="text-slate-500 dark:text-slate-400">Sumatoria: <span id="math-z" class="text-indigo-600 dark:text-indigo-400 font-bold">0.0</span></div>
+                            <div class="text-slate-500 dark:text-slate-400">Salida: <span id="math-y" class="text-emerald-500 font-bold">0</span></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ANALIZADOR CLÍNICO Y ESTADO DE CONVERGENCIA -->
+            <div id="board-analysis" class="border rounded-xl p-5 md:p-6 transition-all duration-300">
+                <div class="flex items-center gap-2 mb-3">
+                    <div id="analysis-icon-container" class="p-2 rounded-lg">
+                        <i id="analysis-icon" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h3 id="analysis-title" class="font-bold text-sm">Estado del Entrenamiento</h3>
+                        <p id="analysis-subtitle" class="text-xs text-slate-500 dark:text-slate-400">Evaluando la viabilidad matemática de la compuerta.</p>
+                    </div>
+                </div>
+                <p id="analysis-desc" class="text-xs leading-relaxed text-slate-600 dark:text-slate-300">
+                    Cargando análisis...
+                </p>
+                
+                <!-- Demostración analítica detallada -->
+                <div class="mt-4 pt-4 border-t border-slate-200 dark:border-slate-800 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                    <div>
+                        <h4 class="font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Tabla de Verdad y Estado de Predicción:</h4>
+                        <table class="w-full text-center border-collapse">
+                            <thead>
+                                <tr class="border-b border-slate-200 dark:border-slate-800 text-slate-400 text-[10px] uppercase">
+                                    <th class="pb-1">x₁</th>
+                                    <th class="pb-1">x₂</th>
+                                    <th class="pb-1">Obj</th>
+                                    <th class="pb-1">Pred</th>
+                                    <th class="pb-1">Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-truth-body" class="font-mono">
+                                <!-- Filas dinámicas -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="flex flex-col justify-center bg-slate-100 dark:bg-slate-950 p-3 rounded-lg border border-slate-200 dark:border-slate-800">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Ecuación del Límite de Decisión:</span>
+                        <div id="math-formula" class="font-mono text-xs text-indigo-600 dark:text-indigo-300 bg-white dark:bg-slate-900 p-2 rounded border border-slate-200 dark:border-slate-800">
+                            y = step(w₁x₁ + w₂x₂ + b)
+                        </div>
+                        <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
+                            Si el resultado de la sumatoria es mayor o igual a 0, la neurona se activa (1), de lo contrario permanece inactiva (0).
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="border-t border-slate-200 dark:border-slate-900 bg-white dark:bg-slate-950 py-5 px-6 text-center text-xs text-slate-500 dark:text-slate-400">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-3">
+            <p>Simulador para la cátedra de Inteligencia Artificial Agéntica y Redes Neuronales.</p>
+            <div class="flex gap-4">
+                <span class="font-semibold text-slate-600 dark:text-slate-300">Teorema de Separabilidad Lineal</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- LOGICA DEL SIMULADOR -->
+    <script>
+        // Inicializar Iconos de Lucide
+        lucide.createIcons();
+
+        // Estado global del simulador
+        let state = {
+            gate: 'and',       // 'and', 'or', 'xor'
+            w1: 0.8,
+            w2: 0.8,
+            b: -1.2,
+            test_x1: 0,
+            test_x2: 0,
+            epoch: 0,
+            trainingInterval: null,
+            maxEpochs: 100
+        };
+
+        // Datasets de operaciones lógicas
+        const datasets = {
+            and: [
+                { inputs: [0, 0], output: 0 },
+                { inputs: [0, 1], output: 0 },
+                { inputs: [1, 0], output: 0 },
+                { inputs: [1, 1], output: 1 }
+            ],
+            or: [
+                { inputs: [0, 0], output: 0 },
+                { inputs: [0, 1], output: 1 },
+                { inputs: [1, 0], output: 1 },
+                { inputs: [1, 1], output: 1 }
+            ],
+            xor: [
+                { inputs: [0, 0], output: 0 },
+                { inputs: [0, 1], output: 1 },
+                { inputs: [1, 0], output: 1 },
+                { inputs: [1, 1], output: 0 }
+            ]
+        };
+
+        // Presets óptimos para demostración manual rápida
+        const presets = {
+            and: { w1: 1.0, w2: 1.0, b: -1.5 },
+            or:  { w1: 1.0, w2: 1.0, b: -0.5 },
+            xor: { w1: 0.5, w2: -0.5, b: 0.0 }
+        };
+
+        // Inicializar la aplicación
+        window.addEventListener('load', () => {
+            selectGate('and');
+            // Detectar tema preferido por el navegador del sistema
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+                document.documentElement.classList.remove('dark');
+            }
+            drawAll();
+        });
+
+        // Toggle del tema Claro / Oscuro
+        function toggleTheme() {
+            const root = document.documentElement;
+            if (root.classList.contains('dark')) {
+                root.classList.remove('dark');
+            } else {
+                root.classList.add('dark');
+            }
+            drawAll();
+        }
+
+        // Seleccionar Compuerta Lógica
+        function selectGate(gateName) {
+            stopTraining();
+            state.gate = gateName;
+            state.epoch = 0;
+            document.getElementById('badge-epoch').textContent = `Época: 0`;
+
+            // Cargar Preset de pesos iniciales
+            state.w1 = presets[gateName].w1;
+            state.w2 = presets[gateName].w2;
+            state.b = presets[gateName].b;
+
+            // Sincronizar UI de Sliders
+            document.getElementById('param-w1').value = state.w1;
+            document.getElementById('param-w2').value = state.w2;
+            document.getElementById('param-b').value = state.b;
+
+            // Actualizar botones de compuerta
+            const gates = ['and', 'or', 'xor'];
+            gates.forEach(g => {
+                const btn = document.getElementById(`btn-gate-${g}`);
+                if (g === gateName) {
+                    btn.className = "py-2.5 px-3 rounded-lg border text-sm font-bold transition flex flex-col items-center gap-1 bg-indigo-600 border-indigo-600 text-white dark:bg-indigo-600 dark:border-indigo-600";
+                } else {
+                    btn.className = "py-2.5 px-3 rounded-lg border text-sm font-bold transition flex flex-col items-center gap-1 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-700";
+                }
+            });
+
+            document.getElementById('training-log').innerHTML = `<div class="text-slate-400 dark:text-slate-500">Cargada compuerta ${gateName.toUpperCase()}. Listo para simular.</div>`;
+            
+            drawAll();
+        }
+
+        // Alternar señal de prueba manual
+        function toggleSignal(inputNum) {
+            if (inputNum === 1) {
+                state.test_x1 = state.test_x1 === 0 ? 1 : 0;
+                document.getElementById('val-test-x1').textContent = state.test_x1;
+            } else {
+                state.test_x2 = state.test_x2 === 0 ? 1 : 0;
+                document.getElementById('val-test-test-x2').textContent = state.test_x2;
+            }
+            drawAll();
+        }
+
+        // Actualizar parámetros desde los sliders
+        function updateParameters() {
+            state.w1 = parseFloat(document.getElementById('param-w1').value);
+            state.w2 = parseFloat(document.getElementById('param-w2').value);
+            state.b = parseFloat(document.getElementById('param-b').value);
+            
+            drawAll();
+        }
+
+        // Detener e iniciar bucle de entrenamiento
+        function toggleTrainingLoop() {
+            if (state.trainingInterval) {
+                stopTraining();
+            } else {
+                startTraining();
+            }
+        }
+
+        function startTraining() {
+            const btn = document.getElementById('btn-play-train');
+            const icon = document.getElementById('icon-play-train');
+            const txt = document.getElementById('txt-play-train');
+
+            btn.classList.replace('bg-indigo-600', 'bg-rose-600');
+            btn.classList.replace('hover:bg-indigo-500', 'hover:bg-rose-500');
+            icon.setAttribute('data-lucide', 'pause');
+            txt.textContent = "Pausar";
+            lucide.createIcons();
+
+            state.trainingInterval = setInterval(() => {
+                executeSingleEpoch();
+            }, 100);
+        }
+
+        function stopTraining() {
+            if (state.trainingInterval) {
+                clearInterval(state.trainingInterval);
+                state.trainingInterval = null;
+            }
+            const btn = document.getElementById('btn-play-train');
+            const icon = document.getElementById('icon-play-train');
+            const txt = document.getElementById('txt-play-train');
+
+            if (btn) {
+                btn.classList.replace('bg-rose-600', 'bg-indigo-600');
+                btn.classList.replace('hover:bg-rose-500', 'hover:bg-indigo-500');
+                icon.setAttribute('data-lucide', 'play');
+                txt.textContent = "Entrenar";
+                lucide.createIcons();
+            }
+        }
+
+        // Ejecutar un único paso de entrenamiento (Época)
+        function executeSingleEpoch() {
+            const dataset = datasets[state.gate];
+            const lr = parseFloat(document.getElementById('select-lr').value);
+            let totalErrors = 0;
+
+            state.epoch++;
+            document.getElementById('badge-epoch').textContent = `Época: ${state.epoch}`;
+
+            dataset.forEach(sample => {
+                const x1 = sample.inputs[0];
+                const x2 = sample.inputs[1];
+                const target = sample.output;
+
+                // Suma ponderada y función escalón Heaviside
+                const z = (x1 * state.w1) + (x2 * state.w2) + state.b;
+                const prediction = z >= 0 ? 1 : 0;
+
+                const error = target - prediction;
+
+                if (error !== 0) {
+                    totalErrors++;
+                    // Regla de aprendizaje clásica de Frank Rosenblatt
+                    state.w1 += lr * error * x1;
+                    state.w2 += lr * error * x2;
+                    state.b += lr * error;
+                }
+            });
+
+            // Sincronizar UI de sliders con los nuevos pesos
+            document.getElementById('param-w1').value = state.w1.toFixed(2);
+            document.getElementById('param-w2').value = state.w2.toFixed(2);
+            document.getElementById('param-b').value = state.b.toFixed(2);
+
+            drawAll();
+
+            // Log de control
+            const logBox = document.getElementById('training-log');
+            if (totalErrors === 0) {
+                logBox.innerHTML = `<div class="text-emerald-500 font-bold">✓ Época ${state.epoch}: Convergencia total lograda. Cero errores de clasificación.</div>`;
+                stopTraining();
+            } else {
+                logBox.innerHTML = `<div class="text-indigo-500 dark:text-indigo-400">Época ${state.epoch}: Errores en dataset = ${totalErrors}/4. Ajustando pesos...</div>` + logBox.innerHTML;
+            }
+
+            // Evitar desbordes de logs en el contenedor
+            if (logBox.children.length > 3) {
+                logBox.removeChild(logBox.lastChild);
+            }
+
+            // Gestión de bucle sin fin especial para XOR
+            if (state.gate === 'xor' && state.epoch > 40) {
+                logBox.innerHTML = `<div class="text-rose-500 font-bold">⚠ Época ${state.epoch}: El perceptrón oscila sin fin. Imposible converger para XOR.</div>` + logBox.innerHTML;
+                stopTraining();
+            }
+        }
+
+        // Reiniciar Simulador
+        function resetSimulator() {
+            selectGate(state.gate);
+        }
+
+        // Función de agrupamiento para redibujar todo
+        function drawAll() {
+            // Sincronizar textos de variables en la interfaz
+            document.getElementById('label-w1').textContent = state.w1.toFixed(2);
+            document.getElementById('label-w2').textContent = state.w2.toFixed(2);
+            document.getElementById('label-b').textContent = state.b.toFixed(2);
+
+            drawDecisionBoundary();
+            updateNeuronDiagram();
+            updateAnalysisBoard();
+        }
+
+        // DIBUJAR FRONTERA DE DECISIÓN EN 2D (Canvas)
+        function drawDecisionBoundary() {
+            const canvas = document.getElementById('boundary-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width;
+            const h = canvas.height;
+
+            ctx.clearRect(0, 0, w, h);
+
+            // Rango matemático visible: [-0.5, 1.5] para poder ver los puntos de la tabla cómodamente
+            const minVal = -0.5;
+            const maxVal = 1.5;
+
+            // Función de proyección de coordenadas a píxeles
+            function toPixels(x, y) {
+                const px = ((x - minVal) / (maxVal - minVal)) * w;
+                const py = h - (((y - minVal) / (maxVal - minVal)) * h); // Invertir Y cartesiana
+                return { x: px, y: py };
+            }
+
+            // Detectar si el documento está en modo oscuro
+            const isDark = document.documentElement.classList.contains('dark');
+
+            // 1. Pintar regiones del plano (Fondo Clasificado)
+            // Para optimizar dibujado rápido, evaluamos el plano en un mapeo de pixeles
+            const imgData = ctx.createImageData(w, h);
+            for (let py = 0; py < h; py++) {
+                for (let px = 0; px < w; px++) {
+                    // Convertir px a valores matemáticos
+                    const x = minVal + (px / w) * (maxVal - minVal);
+                    const y = minVal + ((h - py) / h) * (maxVal - minVal);
+
+                    // Ecuación del perceptrón para este punto continuo del plano
+                    const z = (x * state.w1) + (y * state.w2) + state.b;
+                    const prediction = z >= 0 ? 1 : 0;
+
+                    const index = (py * w + px) * 4;
+
+                    if (prediction === 1) {
+                        // Región Clase 1 (Azul / Indigo de fondo)
+                        if (isDark) {
+                            imgData.data[index] = 30;     // R
+                            imgData.data[index + 1] = 27; // G
+                            imgData.data[index + 2] = 75; // B
+                            imgData.data[index + 3] = 190;// A
+                        } else {
+                            imgData.data[index] = 224;    // R
+                            imgData.data[index + 1] = 231;// G
+                            imgData.data[index + 2] = 255;// B
+                            imgData.data[index + 3] = 190;// A
+                        }
+                    } else {
+                        // Región Clase 0 (Rojo / Rosa de fondo)
+                        if (isDark) {
+                            imgData.data[index] = 76;     // R
+                            imgData.data[index + 1] = 5;  // G
+                            imgData.data[index + 2] = 25; // B
+                            imgData.data[index + 3] = 190;// A
+                        } else {
+                            imgData.data[index] = 254;    // R
+                            imgData.data[index + 1] = 226;// G
+                            imgData.data[index + 2] = 226;// B
+                            imgData.data[index + 3] = 190;// A
+                        }
+                    }
+                }
+            }
+            ctx.putImageData(imgData, 0, 0);
+
+            // 2. Dibujar ejes auxiliares discretos
+            ctx.strokeStyle = isDark ? '#1e293b' : '#cbd5e1';
+            ctx.lineWidth = 1.5;
+            ctx.setLineDash([2, 3]);
+
+            // Dibujar lineas de cuadrícula para valores enteros [0, 1]
+            [0, 1].forEach(val => {
+                // Verticales
+                let p1 = toPixels(val, -0.5);
+                let p2 = toPixels(val, 1.5);
+                ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
+                // Horizontales
+                p1 = toPixels(-0.5, val);
+                p2 = toPixels(1.5, val);
+                ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
+            });
+            ctx.setLineDash([]);
+
+            // 3. Dibujar la línea decisora (Frontera w1x1 + w2x2 + b = 0)
+            // x2 = (-w1x1 - b)/w2 => Representado en el canvas: y = (-w1*x - b)/w2
+            ctx.strokeStyle = '#10b981'; // Verde Esmeralda
+            ctx.lineWidth = 3.5;
+            ctx.beginPath();
+
+            const y_at_min_x = (-state.w1 * minVal - state.b) / (state.w2 === 0 ? 0.0001 : state.w2);
+            const y_at_max_x = (-state.w1 * maxVal - state.b) / (state.w2 === 0 ? 0.0001 : state.w2);
+
+            const lineStart = toPixels(minVal, y_at_min_x);
+            const lineEnd = toPixels(maxVal, y_at_max_x);
+
+            ctx.moveTo(lineStart.x, lineStart.y);
+            ctx.lineTo(lineEnd.x, lineEnd.y);
+            ctx.stroke();
+
+            // 4. Pintar los 4 puntos de entrenamiento
+            const dataset = datasets[state.gate];
+            dataset.forEach(point => {
+                const x = point.inputs[0];
+                const y = point.inputs[1];
+                const target = point.output;
+                const pixelCoords = toPixels(x, y);
+
+                // Determinar si la predicción actual en este punto es correcta
+                const currentZ = (x * state.w1) + (y * state.w2) + state.b;
+                const currentPred = currentZ >= 0 ? 1 : 0;
+                const isCorrect = currentPred === target;
+
+                // Dibujar anillo exterior (Correcto = Brillante, Incorrecto = Borde parpadeante/blanco)
+                ctx.beginPath();
+                ctx.arc(pixelCoords.x, pixelCoords.y, 11, 0, 2 * Math.PI);
+                ctx.fillStyle = isDark ? '#0b0f19' : '#ffffff';
+                ctx.fill();
+                ctx.lineWidth = isCorrect ? 2 : 4;
+                ctx.strokeStyle = isCorrect ? (target === 1 ? '#6366f1' : '#ef4444') : '#f59e0b'; // Naranja si es incorrecto
+                ctx.stroke();
+
+                // Núcleo del punto de clase
+                ctx.beginPath();
+                ctx.arc(pixelCoords.x, pixelCoords.y, 6, 0, 2 * Math.PI);
+                ctx.fillStyle = target === 1 ? '#6366f1' : '#ef4444';
+                ctx.fill();
+
+                // Texto marcador de coordenadas
+                ctx.fillStyle = isDark ? '#94a3b8' : '#475569';
+                ctx.font = 'bold 9px monospace';
+                ctx.fillText(`(${x},${y})`, pixelCoords.x - 14, pixelCoords.y - 15);
+            });
+        }
+
+        // ACTUALIZAR DIAGRAMA SVG DE LA NEURONA
+        function updateNeuronDiagram() {
+            // Calcular salida para las señales de testeo actuales
+            const z = (state.test_x1 * state.w1) + (state.test_x2 * state.w2) + state.b;
+            const prediction = z >= 0 ? 1 : 0;
+
+            // Actualizar etiquetas matemáticas flotantes
+            document.getElementById('math-z').textContent = z.toFixed(2);
+            document.getElementById('math-y').textContent = prediction;
+
+            // Cambiar estados visuales de los nodos de entrada según si están a 1 o 0
+            const elNodeX1 = document.getElementById('svg-node-x1');
+            const elNodeX2 = document.getElementById('svg-node-x2');
+            const elNodeY = document.getElementById('svg-node-y');
+            const elNodeAct = document.getElementById('svg-node-act');
+
+            const valX1Text = document.getElementById('val-test-x1');
+            const valX2Text = document.getElementById('val-test-test-x2');
+
+            // Actualizar textos del SVG de pesos
+            document.getElementById('svg-txt-w1').textContent = state.w1.toFixed(1);
+            document.getElementById('svg-txt-w2').textContent = state.w2.toFixed(1);
+            document.getElementById('svg-txt-y').textContent = prediction;
+
+            // Modos de color basados en activación
+            if (state.test_x1 === 1) {
+                elNodeX1.setAttribute('fill', '#6366f1');
+                elNodeX1.setAttribute('stroke', '#ffffff');
+                elNodeX1.setAttribute('stroke-width', '2');
+            } else {
+                elNodeX1.setAttribute('fill', '#475569');
+                elNodeX1.removeAttribute('stroke');
+            }
+
+            if (state.test_x2 === 1) {
+                elNodeX2.setAttribute('fill', '#6366f1');
+                elNodeX2.setAttribute('stroke', '#ffffff');
+                elNodeX2.setAttribute('stroke-width', '2');
+            } else {
+                elNodeX2.setAttribute('fill', '#475569');
+                elNodeX2.removeAttribute('stroke');
+            }
+
+            if (prediction === 1) {
+                elNodeY.setAttribute('fill', '#10b981');
+                elNodeAct.setAttribute('fill', '#10b981');
+            } else {
+                elNodeY.setAttribute('fill', '#ef4444');
+                elNodeAct.setAttribute('fill', '#ef4444');
+            }
+
+            // Cambiar pesos de líneas basados en la magnitud
+            const line1 = document.getElementById('line-w1');
+            const line2 = document.getElementById('line-w2');
+            const lineB = document.getElementById('line-b');
+
+            line1.setAttribute('stroke-width', Math.max(1, Math.min(6, Math.abs(state.w1) * 3)));
+            line2.setAttribute('stroke-width', Math.max(1, Math.min(6, Math.abs(state.w2) * 3)));
+
+            // Colores de peso (Azul si es positivo, Rojo si es negativo)
+            line1.setAttribute('stroke', state.w1 >= 0 ? '#6366f1' : '#f43f5e');
+            line2.setAttribute('stroke', state.w2 >= 0 ? '#6366f1' : '#f43f5e');
+
+            // Sincronizar botones interactivos de entrada
+            const btnX1 = document.getElementById('test-x1');
+            const btnX2 = document.getElementById('test-x2');
+
+            if (state.test_x1 === 1) {
+                btnX1.className = "px-4 py-2 rounded border border-indigo-500 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 text-xs font-semibold flex items-center gap-1.5 transition";
+            } else {
+                btnX1.className = "px-4 py-2 rounded border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-500 text-xs font-semibold flex items-center gap-1.5 transition";
+            }
+
+            if (state.test_x2 === 1) {
+                btnX2.className = "px-4 py-2 rounded border border-indigo-500 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 text-xs font-semibold flex items-center gap-1.5 transition";
+            } else {
+                btnX2.className = "px-4 py-2 rounded border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-500 text-xs font-semibold flex items-center gap-1.5 transition";
+            }
+        }
+
+        // ACTUALIZAR CUADRO DE ANÁLISIS E HISTORIAL ACADÉMICO
+        function updateAnalysisBoard() {
+            const tableBody = document.getElementById('table-truth-body');
+            const dataset = datasets[state.gate];
+            let html = '';
+            let totalErrors = 0;
+
+            dataset.forEach(point => {
+                const x1 = point.inputs[0];
+                const x2 = point.inputs[1];
+                const target = point.output;
+
+                // Predicción actual
+                const z = (x1 * state.w1) + (x2 * state.w2) + state.b;
+                const pred = z >= 0 ? 1 : 0;
+                const isCorrect = pred === target;
+
+                if (!isCorrect) totalErrors++;
+
+                html += `
+                    <tr class="border-b border-slate-100 dark:border-slate-800/50 text-slate-700 dark:text-slate-300">
+                        <td class="py-1">${x1}</td>
+                        <td class="py-1">${x2}</td>
+                        <td class="py-1 font-bold text-slate-400">${target}</td>
+                        <td class="py-1 font-bold ${pred === 1 ? 'text-indigo-500' : 'text-rose-500'}">${pred}</td>
+                        <td class="py-1 font-semibold text-[10px]">
+                            ${isCorrect ? '<span class="text-emerald-500">✔ Correcto</span>' : '<span class="text-amber-500">❌ Error</span>'}
+                        </td>
+                    </tr>
+                `;
+            });
+            tableBody.innerHTML = html;
+
+            // Diagnóstico y renderizado de texto de análisis académico
+            const card = document.getElementById('board-analysis');
+            const iconContainer = document.getElementById('analysis-icon-container');
+            const icon = document.getElementById('analysis-icon');
+            const title = document.getElementById('analysis-title');
+            const subtitle = document.getElementById('analysis-subtitle');
+            const desc = document.getElementById('analysis-desc');
+            const mathFormula = document.getElementById('math-formula');
+
+            // Actualizar vista de fórmula descriptiva
+            mathFormula.textContent = `y = Heaviside(${state.w1.toFixed(1)}·x₁ + ${state.w2.toFixed(1)}·x₂ + (${state.b.toFixed(1)}))`;
+
+            if (state.gate === 'and') {
+                if (totalErrors === 0) {
+                    card.className = "border rounded-xl p-5 md:p-6 bg-emerald-50/50 dark:bg-emerald-950/10 border-emerald-200 dark:border-emerald-900/40 transition duration-300";
+                    iconContainer.className = "p-2 rounded-lg bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400";
+                    icon.setAttribute('data-lucide', 'check-circle');
+                    title.textContent = "AND - Convergencia Completa";
+                    subtitle.textContent = "Clasificado de forma óptima";
+                    desc.textContent = "Excelente. El algoritmo ha encontrado una frontera lineal (hiperplano) capaz de segregar limpiamente el valor activo (1,1) de todos los demás estados que permanecen en el subespacio inactivo (0).";
+                } else {
+                    card.className = "border rounded-xl p-5 md:p-6 bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-800 transition duration-300";
+                    iconContainer.className = "p-2 rounded-lg bg-indigo-100 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400";
+                    icon.setAttribute('data-lucide', 'help-circle');
+                    title.textContent = "AND - Esperando Aprendizaje";
+                    subtitle.textContent = "Linealmente Separable";
+                    desc.textContent = "La operación AND es linealmente separable. Haz clic en 'Entrenar' para que los pesos se ajusten automáticamente y logren clasificar perfectamente los 4 puntos.";
+                }
+            } else if (state.gate === 'or') {
+                if (totalErrors === 0) {
+                    card.className = "border rounded-xl p-5 md:p-6 bg-emerald-50/50 dark:bg-emerald-950/10 border-emerald-200 dark:border-emerald-900/40 transition duration-300";
+                    iconContainer.className = "p-2 rounded-lg bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400";
+                    icon.setAttribute('data-lucide', 'check-circle');
+                    title.textContent = "OR - Convergencia Completa";
+                    subtitle.textContent = "Clasificado de forma óptima";
+                    desc.textContent = "La operación OR está perfectamente separada. Solo el origen de coordenadas (0,0) pertenece a la clase inactiva (0), mientras que el resto de las combinaciones caen en la región del hiperplano de activación.";
+                } else {
+                    card.className = "border rounded-xl p-5 md:p-6 bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-800 transition duration-300";
+                    iconContainer.className = "p-2 rounded-lg bg-indigo-100 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400";
+                    icon.setAttribute('data-lucide', 'help-circle');
+                    title.textContent = "OR - Esperando Aprendizaje";
+                    subtitle.textContent = "Linealmente Separable";
+                    desc.textContent = "La operación OR es completamente separable por una recta. Presiona el botón 'Entrenar' para guiar los pesos automáticamente al equilibrio matemático.";
+                }
+            } else if (state.gate === 'xor') {
+                // XOR siempre reportará imposibilidad
+                card.className = "border rounded-xl p-5 md:p-6 bg-rose-50/50 dark:bg-rose-950/10 border-rose-200 dark:border-rose-900/40 transition duration-300";
+                iconContainer.className = "p-2 rounded-lg bg-rose-100 dark:bg-rose-950 text-rose-600 dark:text-rose-400";
+                icon.setAttribute('data-lucide', 'alert-triangle');
+                title.textContent = "XOR - Imposibilidad de Separación";
+                subtitle.textContent = "El Límite del Perceptrón Simple";
+                desc.innerHTML = "<strong>Demostración Analítica:</strong> XOR requiere clasificar como 1 a (0,1) y (1,0) y como 0 a (0,0) y (1,1). No existe ninguna línea recta que pueda aislar las diagonales cruzadas del plano. El sistema entrará en un ciclo infinito de corrección de pesos sin lograr jamás una tasa de error de cero. Para solucionar esto en la IA moderna, se requiere el uso de múltiples capas (MLPs) o la ponderación contextual de los <strong>Transformers</strong>.";
+            }
+
+            lucide.createIcons();
+        }
+    </script>
+</body>
+</html>

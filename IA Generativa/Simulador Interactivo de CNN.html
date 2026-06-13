@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulador Interactivo de Redes Neuronales Convolucionales (CNN)</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            slate: {
+              950: '#0b1329',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Ocultar flechas del input number */
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type=number] {
+      -moz-appearance: textfield;
+    }
+    /* Transiciones suaves */
+    .transition-theme {
+      transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+    }
+  </style>
+</head>
+<body class="h-full transition-theme bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100 font-sans">
+
+  <!-- --- CONTENEDOR PRINCIPAL --- -->
+  <div class="min-h-screen flex flex-col justify-between">
+    
+    <!-- --- HEADER --- -->
+    <header class="border-b transition-theme border-slate-200 bg-white/95 dark:border-slate-800 dark:bg-slate-900/90 backdrop-blur sticky top-0 z-50 px-6 py-4">
+      <div class="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <div class="flex items-center gap-3">
+            <span class="px-3 py-1 text-xs font-semibold rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
+              Curso: Inteligencia Artificial
+            </span>
+            <span class="text-xs text-slate-500">Recurso Didáctico Universitario</span>
+          </div>
+          <h1 class="text-2xl font-bold mt-1 tracking-tight flex items-center gap-2">
+            🧠 Simulador Interactivo de CNN
+          </h1>
+        </div>
+        
+        <div class="flex items-center gap-3 self-end md:self-auto">
+          <!-- Botón de descarga rápida -->
+          <button
+            onclick="downloadSimulator()"
+            class="py-2 px-3 rounded-lg text-xs font-bold flex items-center gap-2 transition bg-indigo-600 hover:bg-indigo-700 text-white shadow-md"
+            title="Descargar este simulador como archivo HTML"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+            </svg>
+            Descargar HTML
+          </button>
+          
+          <!-- Control de Tema Claro / Oscuro -->
+          <button
+            onclick="toggleTheme()"
+            id="theme-btn"
+            class="p-2.5 rounded-lg border transition-theme border-slate-200 bg-white hover:bg-slate-100 text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800 dark:text-amber-400"
+            title="Cambiar Tema"
+          >
+            <!-- El icono se actualiza en JS -->
+            <span id="theme-icon">🌙</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- --- PANEL DE BIENVENIDA DEL DOCENTE --- -->
+    <div class="max-w-7xl w-full mx-auto px-6 pt-6">
+      <div class="p-4 rounded-xl border transition-theme flex items-start gap-4 bg-indigo-50/50 border-indigo-100 dark:bg-slate-900/40 dark:border-slate-800">
+        <div class="text-3xl flex-shrink-0">👨‍🏫</div>
+        <div>
+          <h4 class="font-semibold text-sm text-indigo-600 dark:text-indigo-400">Laboratorio Virtual de Aprendizaje:</h4>
+          <p class="text-sm mt-1 leading-relaxed opacity-95">
+            "¡Bienvenidos, futuros ingenieros en IA! Este simulador interactivo visualiza el flujo de procesamiento de una <strong>Capa Convolucional básica, su función de activación ReLU y el submuestreo de reducción (Max Pooling)</strong> de forma síncrona. 
+            Haz clic sobre la matriz de entrada para 'dibujar' tus patrones y desliza el cursor sobre la salida para analizar la multiplicación de pesos en tiempo real."
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- --- CONTENIDO PRINCIPAL --- -->
+    <main class="max-w-7xl w-full mx-auto p-6 grid grid-cols-1 lg:grid-cols-12 gap-8 flex-grow">
+      
+      <!-- ================= COLUMNA IZQUIERDA: CONTROLES (4 COLUMNAS) ================= -->
+      <section class="lg:col-span-4 flex flex-col gap-6">
+        
+        <!-- Tarjeta de Entrada y Preajustes -->
+        <div class="p-5 rounded-xl border transition-theme bg-white border-slate-200 dark:bg-slate-900/60 dark:border-slate-800">
+          <h3 class="font-bold text-base mb-4 flex items-center gap-2">
+            <span class="p-1 rounded bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 text-xs">Paso 1</span>
+            Patrón de Entrada (6x6)
+          </h3>
+          <p class="text-xs opacity-75 mb-3">
+            Haz clic en las celdas de la cuadrícula para alternar la intensidad del pixel (0 ➜ 3 ➜ 6 ➜ 9 ➜ 0):
+          </p>
+          <div class="flex gap-1.5 flex-wrap">
+            <button onclick="applyInputPreset('square')" class="px-2.5 py-1.5 rounded text-xs transition bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700">
+              🔲 Cuadrado
+            </button>
+            <button onclick="applyInputPreset('cross')" class="px-2.5 py-1.5 rounded text-xs transition bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700">
+              ❌ Cruz
+            </button>
+            <button onclick="applyInputPreset('vertical')" class="px-2.5 py-1.5 rounded text-xs transition bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700">
+              ➖ Vertical
+            </button>
+            <button onclick="applyInputPreset('empty')" class="px-2.5 py-1.5 rounded text-xs transition bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500/20">
+              🗑️ Limpiar
+            </button>
+          </div>
+        </div>
+
+        <!-- Tarjeta de Kernel y Filtros -->
+        <div class="p-5 rounded-xl border transition-theme bg-white border-slate-200 dark:bg-slate-900/60 dark:border-slate-800">
+          <h3 class="font-bold text-base mb-3 flex items-center gap-2">
+            <span class="p-1 rounded bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 text-xs">Paso 2</span>
+            Kernel / Filtro Extractor (3x3)
+          </h3>
+          
+          <label class="text-xs font-semibold block mb-2 opacity-80">Preset de Kernel:</label>
+          <select
+            id="kernel-preset-select"
+            onchange="onPresetChange(this.value)"
+            class="w-full p-2 rounded-lg border text-sm mb-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50 border-slate-300 dark:bg-slate-800 dark:border-slate-700"
+          >
+            <option value="edges">Detección de Bordes (Sobel)</option>
+            <option value="sharpen">Enfoque (Sharpen)</option>
+            <option value="blur">Desenfoque (Box Blur)</option>
+            <option value="identity">Identidad</option>
+            <option value="custom">Personalizado</option>
+          </select>
+
+          <div class="flex gap-4 items-center">
+            <!-- Matriz Kernel 3x3 -->
+            <div class="grid grid-cols-3 gap-1" id="kernel-inputs-grid">
+              <!-- Renderizado dinámicamente -->
+            </div>
+            
+            <div class="flex-1 text-xs space-y-1 opacity-80 border-l pl-3 border-slate-200 dark:border-slate-800">
+              <p><strong>¿Qué es el Kernel?</strong></p>
+              <p class="leading-snug">Una matriz de pesos deslizante que se multiplica por la entrada para extraer características espaciales específicas (bordes, curvas, texturas).</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tarjeta de Hiperparámetros -->
+        <div class="p-5 rounded-xl border transition-theme bg-white border-slate-200 dark:bg-slate-900/60 dark:border-slate-800">
+          <h3 class="font-bold text-base mb-4 flex items-center gap-2">
+            ⚙️ Hiperparámetros de Capa
+          </h3>
+          
+          <div class="space-y-4">
+            <!-- Padding -->
+            <div>
+              <div class="flex justify-between text-xs mb-1">
+                <span>Padding (Relleno de Ceros):</span>
+                <span class="font-bold text-indigo-600 dark:text-indigo-400" id="padding-label">VALID (Sin relleno)</span>
+              </div>
+              <div class="flex gap-2">
+                <button
+                  id="pad-0-btn"
+                  onclick="setPadding(0)"
+                  class="flex-1 py-1.5 px-3 rounded text-xs font-semibold border transition"
+                >
+                  Valid (0)
+                </button>
+                <button
+                  id="pad-1-btn"
+                  onclick="setPadding(1)"
+                  class="flex-1 py-1.5 px-3 rounded text-xs font-semibold border transition"
+                >
+                  Same (1)
+                </button>
+              </div>
+            </div>
+
+            <!-- Stride -->
+            <div>
+              <div class="flex justify-between text-xs mb-1">
+                <span>Stride (Paso de Avance):</span>
+                <span class="font-bold text-indigo-600 dark:text-indigo-400" id="stride-label">1 px</span>
+              </div>
+              <div class="flex gap-2">
+                <button
+                  id="stride-1-btn"
+                  onclick="setStride(1)"
+                  class="flex-1 py-1.5 px-3 rounded text-xs font-semibold border transition"
+                >
+                  Paso 1
+                </button>
+                <button
+                  id="stride-2-btn"
+                  onclick="setStride(2)"
+                  class="flex-1 py-1.5 px-3 rounded text-xs font-semibold border transition"
+                >
+                  Paso 2
+                </button>
+              </div>
+            </div>
+
+            <!-- Sesgo (Bias) -->
+            <div>
+              <div class="flex justify-between text-xs mb-1">
+                <span>Sesgo (Bias):</span>
+                <span class="font-bold text-amber-500" id="bias-label">0</span>
+              </div>
+              <input
+                type="range"
+                min="-10"
+                max="10"
+                step="1"
+                id="bias-slider"
+                value="0"
+                oninput="onBiasChange(this.value)"
+                class="w-full accent-indigo-500 cursor-pointer"
+              />
+              <span class="text-[10px] opacity-60 block mt-0.5">Suma un valor constante a la salida de la convolución para regular el sesgo de disparo de la neurona.</span>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ================= COLUMNA DERECHA: VISUALIZADOR PRINCIPAL (8 COLUMNAS) ================= -->
+      <section class="lg:col-span-8 flex flex-col gap-6">
+        
+        <!-- Pestañas de Navegación de Capas -->
+        <div class="flex border-b border-slate-200 dark:border-slate-800">
+          <button
+            onclick="switchTab('conv')"
+            id="tab-conv"
+            class="flex-1 pb-3 text-sm font-semibold transition-all border-b-2 flex items-center justify-center gap-2 border-indigo-500 text-indigo-600 dark:text-indigo-400"
+          >
+            🔍 Capa Convolucional
+          </button>
+          <button
+            onclick="switchTab('relu')"
+            id="tab-relu"
+            class="flex-1 pb-3 text-sm font-semibold transition-all border-b-2 flex items-center justify-center gap-2 border-transparent opacity-60 hover:opacity-100"
+          >
+            ⚡ Activación ReLU
+          </button>
+          <button
+            onclick="switchTab('pool')"
+            id="tab-pool"
+            class="flex-1 pb-3 text-sm font-semibold transition-all border-b-2 flex items-center justify-center gap-2 border-transparent opacity-60 hover:opacity-100"
+          >
+            📉 Max Pooling 2x2
+          </button>
+        </div>
+
+        <!-- ÁREA DE ANIMACIÓN AUTOMÁTICA (SWEEP) -->
+        <div class="p-4 rounded-xl border transition-theme flex items-center justify-between flex-wrap gap-4 bg-slate-100/50 border-slate-200 dark:bg-slate-900/40 dark:border-slate-800">
+          <div class="flex items-center gap-3">
+            <button
+              id="play-btn"
+              onclick="togglePlay()"
+              class="py-2 px-4 rounded-lg font-bold text-xs flex items-center gap-2 transition shadow bg-emerald-600 hover:bg-emerald-700 text-white"
+            >
+              <span id="play-btn-icon">▶</span> <span id="play-btn-text">Auto-Barrido</span>
+            </button>
+            
+            <div class="text-xs opacity-85">
+              Posición actual: <span class="font-bold text-amber-500" id="coords-label">(0, 0)</span>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <span class="text-xs opacity-75">Velocidad:</span>
+            <input
+              type="range"
+              min="200"
+              max="2000"
+              step="100"
+              id="speed-slider"
+              value="1200"
+              oninput="onSpeedChange(this.value)"
+              class="accent-emerald-500 cursor-pointer w-28"
+            />
+          </div>
+        </div>
+
+        <!-- GRID COMPARATIVO: ENTRADA (CAMPO RECEPTIVO) vs SALIDA -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
+          
+          <!-- GRID DE ENTRADA -->
+          <div class="p-5 rounded-xl border transition-theme flex flex-col justify-between bg-white border-slate-200 dark:bg-slate-900/30 dark:border-slate-800">
+            <div>
+              <div class="flex justify-between items-center mb-2">
+                <h4 class="font-semibold text-sm">Entrada de la Red</h4>
+                <span class="text-[10px] bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 px-2 py-0.5 rounded font-mono" id="input-dim-label">Dim: 6x6</span>
+              </div>
+              <p class="text-xs opacity-75 mb-4">
+                El recuadro <span class="text-emerald-500 font-bold">verde</span> representa el área de entrada enfocada por el campo receptivo de la neurona actual.
+              </p>
+            </div>
+
+            <div class="flex items-center justify-center p-4 min-h-[280px]">
+              <div id="input-grid-container" class="grid gap-1.5">
+                <!-- Se inyecta por JS -->
+              </div>
+            </div>
+          </div>
+
+          <!-- GRID DE SALIDA DINÁMICA -->
+          <div class="p-5 rounded-xl border transition-theme flex flex-col justify-between bg-white border-slate-200 dark:bg-slate-900/30 dark:border-slate-800">
+            <div>
+              <div class="flex justify-between items-center mb-2">
+                <h4 class="font-semibold text-sm" id="output-title">Salida Convolucional</h4>
+                <span class="text-[10px] bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 px-2 py-0.5 rounded font-mono" id="output-dim-label">Dim: 4x4</span>
+              </div>
+              <p class="text-xs opacity-75 mb-4">
+                Coloca el puntero o toca una celda para inspeccionar el flujo matemático de procesamiento.
+              </p>
+            </div>
+
+            <div class="flex items-center justify-center p-4 min-h-[280px]">
+              <div id="output-grid-container" class="grid gap-2">
+                <!-- Se inyecta por JS -->
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- PANEL DE DESGLOSE MATEMÁTICO -->
+        <div class="p-6 rounded-xl border transition-theme bg-white border-slate-200 dark:bg-slate-900 dark:border-slate-800 shadow-sm">
+          <h4 class="font-bold text-sm mb-4 flex items-center gap-2">
+            🔬 Desglose Matemático de la Neurona Seleccionada
+          </h4>
+
+          <div id="math-display-area" class="space-y-4">
+            <!-- Se actualiza por JS dinámicamente -->
+          </div>
+        </div>
+
+      </section>
+
+    </main>
+
+    <!-- --- FOOTER --- -->
+    <footer class="border-t py-6 text-center text-xs mt-12 transition-theme border-slate-200 bg-slate-100/60 text-slate-500 dark:border-slate-850 dark:bg-slate-900/40">
+      <p class="max-w-4xl mx-auto px-6">
+        © 2026 Laboratorio de Arquitectura de Redes Neuronales • Diseñado por y para Docentes de Inteligencia Artificial.
+      </p>
+    </footer>
+
+  </div>
+
+  <!-- --- SCRIPT PRINCIPAL DEL SIMULADOR (LOGICA CNN) --- -->
+  <script>
+    // --- ESTADO GLOBAL ---
+    const state = {
+      theme: 'dark',
+      activeTab: 'conv', // 'conv' | 'relu' | 'pool'
+      inputGrid: [
+        [0, 0, 0, 0, 0, 0],
+        [0, 9, 9, 9, 9, 0],
+        [0, 9, 0, 0, 9, 0],
+        [0, 9, 0, 0, 9, 0],
+        [0, 9, 9, 9, 9, 0],
+        [0, 0, 0, 0, 0, 0]
+      ],
+      kernel: [
+        [-1, -1, -1],
+        [-1,  8, -1],
+        [-1, -1, -1]
+      ],
+      selectedPreset: 'edges',
+      stride: 1,
+      padding: 0,
+      bias: 0,
+      hoveredCell: { r: 0, c: 0 },
+      isPlaying: false,
+      playSpeed: 1000,
+      timerId: null
+    };
+
+    // --- PREAJUSTES (PRESETS) ---
+    const KERNEL_PRESETS = {
+      edges: [
+        [-1, -1, -1],
+        [-1,  8, -1],
+        [-1, -1, -1]
+      ],
+      sharpen: [
+        [ 0, -1,  0],
+        [-1,  5, -1],
+        [ 0, -1,  0]
+      ],
+      blur: [
+        [1, 1, 1],
+        [1, 1, 1],
+        [1, 1, 1]
+      ],
+      identity: [
+        [0, 0, 0],
+        [0, 1, 0],
+        [0, 0, 0]
+      ],
+      custom: [
+        [1, 0, -1],
+        [1, 0, -1],
+        [1, 0, -1]
+      ]
+    };
+
+    const INPUT_PRESETS = {
+      square: [
+        [0, 0, 0, 0, 0, 0],
+        [0, 9, 9, 9, 9, 0],
+        [0, 9, 0, 0, 9, 0],
+        [0, 9, 0, 0, 9, 0],
+        [0, 9, 9, 9, 9, 0],
+        [0, 0, 0, 0, 0, 0]
+      ],
+      cross: [
+        [0, 0, 9, 9, 0, 0],
+        [0, 0, 9, 9, 0, 0],
+        [9, 9, 9, 9, 9, 9],
+        [9, 9, 9, 9, 9, 9],
+        [0, 0, 9, 9, 0, 0],
+        [0, 0, 9, 9, 0, 0]
+      ],
+      vertical: [
+        [0, 0, 9, 9, 0, 0],
+        [0, 0, 9, 9, 0, 0],
+        [0, 0, 9, 9, 0, 0],
+        [0, 0, 9, 9, 0, 0],
+        [0, 0, 9, 9, 0, 0],
+        [0, 0, 9, 9, 0, 0]
+      ],
+      empty: [
+        [0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0]
+      ]
+    };
+
+    // --- INICIALIZACIÓN ---
+    window.onload = () => {
+      // Aplicar tema por defecto
+      document.documentElement.classList.add('dark');
+      renderKernelInputs();
+      updateSimulator();
+    };
+
+    // --- INTERACCIONES DEL TEMA ---
+    function toggleTheme() {
+      const root = document.documentElement;
+      const themeIcon = document.getElementById('theme-icon');
+      if (root.classList.contains('dark')) {
+        root.classList.remove('dark');
+        state.theme = 'light';
+        themeIcon.innerText = '🌙';
+      } else {
+        root.classList.add('dark');
+        state.theme = 'dark';
+        themeIcon.innerText = '☀️';
+      }
+      updateSimulator();
+    }
+
+    // --- CAMBIO DE CAPA ---
+    function switchTab(tab) {
+      state.activeTab = tab;
+      
+      const tabs = ['conv', 'relu', 'pool'];
+      tabs.forEach(t => {
+        const el = document.getElementById(`tab-${t}`);
+        if (t === tab) {
+          el.className = "flex-1 pb-3 text-sm font-semibold transition-all border-b-2 flex items-center justify-center gap-2 border-indigo-500 text-indigo-600 dark:text-indigo-400";
+        } else {
+          el.className = "flex-1 pb-3 text-sm font-semibold transition-all border-b-2 flex items-center justify-center gap-2 border-transparent opacity-60 hover:opacity-100";
+        }
+      });
+
+      // Resetear posición de celda seleccionada para evitar desbordamiento
+      state.hoveredCell = { r: 0, c: 0 };
+      
+      const outDims = getOutputDimensions();
+      const maxRows = state.activeTab === 'pool' ? Math.floor(outDims.rows / 2) : outDims.rows;
+      const maxCols = state.activeTab === 'pool' ? Math.floor(outDims.cols / 2) : outDims.cols;
+
+      if (state.hoveredCell.r >= maxRows || state.hoveredCell.c >= maxCols) {
+        state.hoveredCell = { r: 0, c: 0 };
+      }
+
+      updateSimulator();
+    }
+
+    // --- RENDERIZADO DEL KERNEL (inputs editables) ---
+    function renderKernelInputs() {
+      const container = document.getElementById('kernel-inputs-grid');
+      container.innerHTML = '';
+      for (let r = 0; r < 3; r++) {
+        for (let c = 0; c < 3; c++) {
+          const input = document.createElement('input');
+          input.type = 'number';
+          input.value = state.kernel[r][c];
+          input.id = `kernel-${r}-${c}`;
+          input.oninput = (e) => onKernelCellChange(r, c, e.target.value);
+          input.className = "w-12 h-10 text-center text-sm font-semibold rounded border focus:ring-1 focus:ring-indigo-400 focus:outline-none transition-theme bg-slate-50 border-slate-200 dark:bg-slate-800 dark:border-slate-700 text-indigo-600 dark:text-indigo-300";
+          container.appendChild(input);
+        }
+      }
+    }
+
+    function onKernelCellChange(r, c, val) {
+      const parsed = parseInt(val) || 0;
+      state.kernel[r][c] = parsed;
+      state.selectedPreset = 'custom';
+      document.getElementById('kernel-preset-select').value = 'custom';
+      updateSimulator();
+    }
+
+    function onPresetChange(presetKey) {
+      state.selectedPreset = presetKey;
+      state.kernel = JSON.parse(JSON.stringify(KERNEL_PRESETS[presetKey]));
+      
+      // Actualizar inputs visibles
+      for (let r = 0; r < 3; r++) {
+        for (let c = 0; c < 3; c++) {
+          document.getElementById(`kernel-${r}-${c}`).value = state.kernel[r][c];
+        }
+      }
+      updateSimulator();
+    }
+
+    // --- ACCIONES DE ENTRADA PREAJUSTADA ---
+    function applyInputPreset(presetKey) {
+      state.inputGrid = JSON.parse(JSON.stringify(INPUT_PRESETS[presetKey]));
+      updateSimulator();
+    }
+
+    function onInputCellClick(r, c) {
+      let val = state.inputGrid[r][c];
+      if (val === 0) val = 3;
+      else if (val === 3) val = 6;
+      else if (val === 6) val = 9;
+      else val = 0;
+
+      state.inputGrid[r][c] = val;
+      updateSimulator();
+    }
+
+    // --- CONTROLE DE HIPERPARÁMETROS ---
+    function setPadding(padValue) {
+      state.padding = padValue;
+      
+      // Estilos de botones
+      const pad0 = document.getElementById('pad-0-btn');
+      const pad1 = document.getElementById('pad-1-btn');
+      const label = document.getElementById('padding-label');
+
+      if (padValue === 0) {
+        pad0.className = "flex-1 py-1.5 px-3 rounded text-xs font-semibold border transition bg-indigo-600 text-white border-indigo-500 shadow";
+        pad1.className = "flex-1 py-1.5 px-3 rounded text-xs font-semibold border transition bg-slate-100 hover:bg-slate-200 border-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 dark:border-slate-700";
+        label.innerText = "VALID (Sin relleno)";
+      } else {
+        pad1.className = "flex-1 py-1.5 px-3 rounded text-xs font-semibold border transition bg-indigo-600 text-white border-indigo-500 shadow";
+        pad0.className = "flex-1 py-1.5 px-3 rounded text-xs font-semibold border transition bg-slate-100 hover:bg-slate-200 border-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 dark:border-slate-700";
+        label.innerText = "SAME (Relleno de ceros)";
+      }
+      
+      updateSimulator();
+    }
+
+    function setStride(strideValue) {
+      state.stride = strideValue;
+
+      const str1 = document.getElementById('stride-1-btn');
+      const str2 = document.getElementById('stride-2-btn');
+      const label = document.getElementById('stride-label');
+
+      if (strideValue === 1) {
+        str1.className = "flex-1 py-1.5 px-3 rounded text-xs font-semibold border transition bg-indigo-600 text-white border-indigo-500 shadow";
+        str2.className = "flex-1 py-1.5 px-3 rounded text-xs font-semibold border transition bg-slate-100 hover:bg-slate-200 border-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 dark:border-slate-700";
+        label.innerText = "1 px";
+      } else {
+        str2.className = "flex-1 py-1.5 px-3 rounded text-xs font-semibold border transition bg-indigo-600 text-white border-indigo-500 shadow";
+        str1.className = "flex-1 py-1.5 px-3 rounded text-xs font-semibold border transition bg-slate-100 hover:bg-slate-200 border-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 dark:border-slate-700";
+        label.innerText = "2 px";
+      }
+
+      updateSimulator();
+    }
+
+    function onBiasChange(biasValue) {
+      state.bias = parseInt(biasValue);
+      document.getElementById('bias-label').innerText = state.bias;
+      updateSimulator();
+    }
+
+    function onSpeedChange(sliderVal) {
+      state.playSpeed = 2200 - parseInt(sliderVal);
+      if (state.isPlaying) {
+        // Reiniciar intervalo para aplicar velocidad
+        clearInterval(state.timerId);
+        startInterval();
+      }
+    }
+
+    // --- CÁLCULOS MATEMÁTICOS DE RED ---
+
+    function getPaddedGrid() {
+      const size = state.inputGrid.length;
+      if (state.padding === 0) return state.inputGrid;
+      
+      const newSize = size + 2;
+      const padded = Array(newSize).fill(0).map(() => Array(newSize).fill(0));
+      for (let r = 0; r < size; r++) {
+        for (let c = 0; c < size; c++) {
+          padded[r + 1][c + 1] = state.inputGrid[r][c];
+        }
+      }
+      return padded;
+    }
+
+    function getOutputDimensions() {
+      const padGrid = getPaddedGrid();
+      const inSize = padGrid.length;
+      const kSize = 3;
+      const rows = Math.floor((inSize - kSize) / state.stride) + 1;
+      const cols = Math.floor((inSize - kSize) / state.stride) + 1;
+      return { rows, cols };
+    }
+
+    function calculateConvolution() {
+      const padGrid = getPaddedGrid();
+      const dims = getOutputDimensions();
+      const output = Array(dims.rows).fill(0).map(() => Array(dims.cols).fill(0));
+      const isBlur = state.selectedPreset === 'blur';
+
+      for (let r = 0; r < dims.rows; r++) {
+        for (let c = 0; c < dims.cols; c++) {
+          let sum = 0;
+          for (let kr = 0; kr < 3; kr++) {
+            for (let kc = 0; kc < 3; kc++) {
+              const ir = r * state.stride + kr;
+              const ic = c * state.stride + kc;
+              sum += (padGrid[ir]?.[ic] ?? 0) * state.kernel[kr][kc];
+            }
+          }
+          if (isBlur) {
+            sum = Math.round(sum / 9);
+          }
+          output[r][c] = sum + state.bias;
+        }
+      }
+      return output;
+    }
+
+    function calculateReLU(convGrid) {
+      return convGrid.map(row => row.map(v => Math.max(0, v)));
+    }
+
+    function calculateMaxPooling(reluGrid) {
+      const outDims = getOutputDimensions();
+      const pRows = Math.floor(outDims.rows / 2);
+      const pCols = Math.floor(outDims.cols / 2);
+      const output = Array(pRows).fill(0).map(() => Array(pCols).fill(0));
+
+      for (let r = 0; r < pRows; r++) {
+        for (let c = 0; c < pCols; c++) {
+          const val1 = reluGrid[r * 2]?.[c * 2] ?? -Infinity;
+          const val2 = reluGrid[r * 2]?.[c * 2 + 1] ?? -Infinity;
+          const val3 = reluGrid[r * 2 + 1]?.[c * 2] ?? -Infinity;
+          const val4 = reluGrid[r * 2 + 1]?.[c * 2 + 1] ?? -Infinity;
+          output[r][c] = Math.max(val1, val2, val3, val4);
+        }
+      }
+      return output;
+    }
+
+    // --- RECEPTIVE FIELD HIGHLIGHT ---
+    function isCellInReceptiveField(r, c) {
+      const padGrid = getPaddedGrid();
+      const inSize = padGrid.length;
+      const { r: hr, c: hc } = state.hoveredCell;
+
+      if (state.activeTab === 'pool') {
+        // En Max Pooling 2x2, la celda representa un área de 2x2 de la salida ReLU
+        const minConvR = hr * 2;
+        const maxConvR = hr * 2 + 1;
+        const minConvC = hc * 2;
+        const maxConvC = hc * 2 + 1;
+
+        // Mapear cada una de estas coordenadas hacia atrás en el paso de la entrada
+        const minInR = minConvR * state.stride;
+        const maxInR = maxConvR * state.stride + 2;
+        const minInC = minConvC * state.stride;
+        const maxInC = maxConvC * state.stride + 2;
+
+        return (r >= minInR && r <= maxInR && c >= minInC && c <= maxInC);
+      } else {
+        // Convolución estándar
+        const startR = hr * state.stride;
+        const startC = hc * state.stride;
+        return (
+          r >= startR && r < startR + 3 &&
+          c >= startC && c < startC + 3
+        );
+      }
+    }
+
+    // --- COLORES DINÁMICOS ---
+    function getIntensityColorClass(val, isPadded) {
+      const isDark = document.documentElement.classList.contains('dark');
+      if (isPadded) {
+        return isDark 
+          ? 'bg-slate-800/40 border-dashed border-slate-700 text-slate-500' 
+          : 'bg-slate-100/40 border-dashed border-slate-300 text-slate-400';
+      }
+
+      const intensities = {
+        0: isDark ? 'bg-slate-900 border-slate-800 text-slate-600' : 'bg-white border-slate-200 text-slate-300',
+        3: isDark ? 'bg-indigo-950/60 border-indigo-900 text-indigo-300' : 'bg-indigo-50 border-indigo-200 text-indigo-600',
+        6: isDark ? 'bg-indigo-900/80 border-indigo-700 text-indigo-200' : 'bg-indigo-100 border-indigo-300 text-indigo-700',
+        9: isDark ? 'bg-indigo-600 border-indigo-500 text-white font-bold' : 'bg-indigo-500 border-indigo-400 text-white font-bold'
+      };
+
+      return intensities[val] || intensities[0];
+    }
+
+    // --- ACTUALIZACIÓN DE INTERFAZ ---
+    function updateSimulator() {
+      const padGrid = getPaddedGrid();
+      const inputSize = padGrid.length;
+      
+      // Actualizar información de coordenadas en la interfaz
+      document.getElementById('coords-label').innerText = `(${state.hoveredCell.r}, ${state.hoveredCell.c})`;
+
+      // --- 1. RENDERIZADO DE MATRIZ DE ENTRADA ---
+      const inputContainer = document.getElementById('input-grid-container');
+      inputContainer.innerHTML = '';
+      inputContainer.style.gridTemplateColumns = `repeat(${inputSize}, minmax(0, 1fr))`;
+      document.getElementById('input-dim-label').innerText = `Dim: ${inputSize}x${inputSize}`;
+
+      padGrid.forEach((row, r) => {
+        row.forEach((val, c) => {
+          const cell = document.createElement('div');
+          const isPadded = state.padding === 1 && (r === 0 || r === inputSize - 1 || c === 0 || c === inputSize - 1);
+          const inRF = isCellInReceptiveField(r, c);
+
+          cell.className = `w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded border text-xs cursor-pointer select-none relative transition-all ${
+            getIntensityColorClass(val, isPadded)
+          } ${
+            inRF ? 'ring-2 ring-emerald-500 border-emerald-400 z-10 scale-105' : ''
+          }`;
+
+          cell.innerText = val;
+
+          if (isPadded) {
+            const pLabel = document.createElement('span');
+            pLabel.className = "absolute bottom-0.5 right-1 text-[8px] opacity-40 font-mono";
+            pLabel.innerText = "P";
+            cell.appendChild(pLabel);
+          }
+
+          cell.onclick = () => {
+            if (!isPadded) {
+              const originalR = state.padding === 1 ? r - 1 : r;
+              const originalC = state.padding === 1 ? c - 1 : c;
+              onInputCellClick(originalR, originalC);
+            }
+          };
+
+          inputContainer.appendChild(cell);
+        });
+      });
+
+      // --- 2. CÁLCULOS DE CAPAS ---
+      const convResult = calculateConvolution();
+      const reluResult = calculateReLU(convResult);
+      const poolResult = calculateMaxPooling(reluResult);
+
+      // --- 3. RENDERIZADO DE CAPAS DE SALIDA ---
+      const outputContainer = document.getElementById('output-grid-container');
+      outputContainer.innerHTML = '';
+      
+      const outDims = getOutputDimensions();
+      const isDark = document.documentElement.classList.contains('dark');
+
+      if (state.activeTab === 'conv') {
+        document.getElementById('output-title').innerText = "Salida Convolucional";
+        document.getElementById('output-dim-label').innerText = `Dim: ${outDims.rows}x${outDims.cols}`;
+        outputContainer.style.gridTemplateColumns = `repeat(${outDims.cols}, minmax(0, 1fr))`;
+
+        convResult.forEach((row, r) => {
+          row.forEach((val, c) => {
+            const cell = document.createElement('div');
+            const isHovered = state.hoveredCell.r === r && state.hoveredCell.c === c;
+
+            cell.className = `w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded border transition-all text-xs font-semibold cursor-default ${
+              isHovered 
+                ? 'bg-emerald-500 border-emerald-400 text-white scale-110 ring-4 ring-emerald-400/20 shadow-lg' 
+                : isDark ? 'bg-slate-800/80 border-slate-700 text-slate-200' : 'bg-slate-100 border-slate-200 text-slate-800'
+            }`;
+            cell.innerText = val;
+            cell.onmouseover = () => {
+              state.hoveredCell = { r, c };
+              updateSimulator();
+            };
+            outputContainer.appendChild(cell);
+          });
+        });
+
+      } else if (state.activeTab === 'relu') {
+        document.getElementById('output-title').innerText = "Salida Activación (ReLU)";
+        document.getElementById('output-dim-label').innerText = `Dim: ${outDims.rows}x${outDims.cols}`;
+        outputContainer.style.gridTemplateColumns = `repeat(${outDims.cols}, minmax(0, 1fr))`;
+
+        reluResult.forEach((row, r) => {
+          row.forEach((val, c) => {
+            const cell = document.createElement('div');
+            const isHovered = state.hoveredCell.r === r && state.hoveredCell.c === c;
+            const wasClamped = convResult[r]?.[c] < 0;
+
+            cell.className = `w-10 h-10 md:w-12 md:h-12 flex flex-col items-center justify-center rounded border transition-all text-xs font-semibold cursor-default relative ${
+              isHovered 
+                ? 'bg-amber-500 border-amber-400 text-white scale-110 ring-4 ring-amber-400/20 shadow-lg' 
+                : isDark ? 'bg-slate-800/80 border-slate-700 text-slate-200' : 'bg-slate-100 border-slate-200 text-slate-800'
+            }`;
+            
+            const spanValue = document.createElement('span');
+            spanValue.innerText = val;
+            cell.appendChild(spanValue);
+
+            if (wasClamped) {
+              const clampInd = document.createElement('span');
+              clampInd.className = "absolute top-0 right-1 text-[8px] text-red-500 dark:text-red-400 font-bold";
+              clampInd.innerText = "Ø";
+              clampInd.title = `Truncado por ReLU de ${convResult[r][c]} a 0`;
+              cell.appendChild(clampInd);
+            }
+
+            cell.onmouseover = () => {
+              state.hoveredCell = { r, c };
+              updateSimulator();
+            };
+            outputContainer.appendChild(cell);
+          });
+        });
+
+      } else if (state.activeTab === 'pool') {
+        const pRows = Math.floor(outDims.rows / 2);
+        const pCols = Math.floor(outDims.cols / 2);
+
+        document.getElementById('output-title').innerText = "Salida Max Pooling 2x2";
+        document.getElementById('output-dim-label').innerText = `Dim: ${pRows}x${pCols}`;
+        outputContainer.style.gridTemplateColumns = `repeat(${pCols}, minmax(0, 1fr))`;
+
+        poolResult.forEach((row, r) => {
+          row.forEach((val, c) => {
+            const cell = document.createElement('div');
+            const isHovered = state.hoveredCell.r === r && state.hoveredCell.c === c;
+
+            cell.className = `w-14 h-14 flex items-center justify-center rounded-xl border transition-all text-sm font-bold cursor-default ${
+              isHovered 
+                ? 'bg-purple-500 border-purple-400 text-white scale-110 ring-4 ring-purple-400/20 shadow-lg' 
+                : isDark ? 'bg-slate-800/80 border-slate-700 text-slate-200' : 'bg-slate-100 border-slate-200 text-slate-800'
+            }`;
+            cell.innerText = val === -Infinity ? 'N/A' : val;
+            
+            cell.onmouseover = () => {
+              state.hoveredCell = { r, c };
+              updateSimulator();
+            };
+            outputContainer.appendChild(cell);
+          });
+        });
+      }
+
+      // --- 4. ACTUALIZAR EXPLICADOR MATEMÁTICO ---
+      renderMathBreakdown(convResult, reluResult, poolResult);
+    }
+
+    // --- EXPLICACIÓN MATEMÁTICA FORMATEADA ---
+    function renderMathBreakdown(convResult, reluResult, poolResult) {
+      const area = document.getElementById('math-display-area');
+      area.innerHTML = '';
+
+      const { r, c } = state.hoveredCell;
+      const padGrid = getPaddedGrid();
+
+      if (state.activeTab === 'conv' || state.activeTab === 'relu') {
+        const isBlur = state.selectedPreset === 'blur';
+        let terms = [];
+        let rawSum = 0;
+
+        for (let kr = 0; kr < 3; kr++) {
+          for (let kc = 0; kc < 3; kc++) {
+            const ir = r * state.stride + kr;
+            const ic = c * state.stride + kc;
+            const valIn = padGrid[ir]?.[ic] ?? 0;
+            const valK = state.kernel[kr][kc];
+            rawSum += valIn * valK;
+            terms.push(`<span class="text-indigo-600 dark:text-indigo-300">(${valIn} × ${valK})</span>`);
+          }
+        }
+
+        let convVal = rawSum;
+        if (isBlur) convVal = Math.round(rawSum / 9);
+        const finalConvVal = convVal + state.bias;
+        const finalReluVal = Math.max(0, finalConvVal);
+
+        if (state.activeTab === 'conv') {
+          area.innerHTML = `
+            <div class="p-3.5 rounded-lg text-xs leading-relaxed font-mono bg-slate-900 text-slate-300 border border-slate-800 overflow-x-auto">
+              <span class="text-emerald-400">Sumatoria_Convolucional</span> = ${terms.join(' + ')} ${state.bias !== 0 ? ` + (${state.bias})` : ''}
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+              <div class="space-y-1.5 opacity-90">
+                <p>🔵 <strong>Pasos de Cálculo:</strong></p>
+                <p>Suma ponderada del kernel: <code class="text-amber-500 font-bold font-mono">${rawSum}</code></p>
+                ${isBlur ? `<p class="text-indigo-400">Promedio Box Blur (/9): <code class="font-bold font-mono">${convVal}</code></p>` : ''}
+                <p>Suma del Sesgo (Bias): <code class="text-indigo-400 font-bold font-mono">${state.bias}</code></p>
+              </div>
+              <div class="p-3 rounded-lg flex flex-col justify-center bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-500/20 text-center">
+                <span class="text-xs uppercase tracking-wider opacity-60">Resultado Convolucional</span>
+                <span class="text-2xl font-bold">${finalConvVal}</span>
+              </div>
+            </div>
+          `;
+        } else {
+          // ReLU tab
+          area.innerHTML = `
+            <div class="p-4 rounded-lg flex flex-col md:flex-row items-center justify-around gap-4 bg-slate-900 text-xs border border-slate-800">
+              <div class="text-center">
+                <p class="opacity-60 uppercase text-[9px] text-slate-400">Valor Convolución</p>
+                <p class="text-xl font-bold text-slate-200">${finalConvVal}</p>
+              </div>
+              <div class="text-2xl text-amber-500 font-bold">➜</div>
+              <div class="text-center">
+                <p class="text-amber-400 font-bold font-mono">f(x) = max(0, x)</p>
+                <p class="opacity-60 text-[9px] text-slate-400">Filtro de Activación</p>
+              </div>
+              <div class="text-2xl text-amber-500 font-bold">➜</div>
+              <div class="text-center">
+                <p class="opacity-60 uppercase text-[9px] text-amber-400">Salida ReLU</p>
+                <p class="text-xl font-bold text-amber-400">${finalReluVal}</p>
+              </div>
+            </div>
+            <p class="text-xs opacity-85 leading-relaxed">
+              📢 <strong>Análisis del Docente:</strong> La capa <strong>ReLU (Rectified Linear Unit)</strong> elimina los valores de activación negativos reemplazándolos con <code class="text-red-500 font-mono font-bold">0</code>. Esto permite romper la linealidad del modelo, facilitando que la red convolucional aprenda geometrías curvas y patrones multidimensionales hipercomplejos.
+            </p>
+          `;
+        }
+
+      } else if (state.activeTab === 'pool') {
+        const val1 = reluResult[r * 2]?.[c * 2] ?? -Infinity;
+        const val2 = reluResult[r * 2]?.[c * 2 + 1] ?? -Infinity;
+        const val3 = reluResult[r * 2 + 1]?.[c * 2] ?? -Infinity;
+        const val4 = reluResult[r * 2 + 1]?.[c * 2 + 1] ?? -Infinity;
+        const maxVal = Math.max(val1, val2, val3, val4);
+
+        area.innerHTML = `
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+            <div class="space-y-3">
+              <p class="text-xs">
+                Se toma una ventana de reducción de <strong class="text-purple-500">2x2 píxeles</strong> sin solapamiento directo (stride espacial 2), seleccionando únicamente el valor de máxima respuesta:
+              </p>
+              <div class="grid grid-cols-2 gap-1 w-24">
+                <div class="p-2 rounded text-xs text-center border font-bold ${val1 === maxVal ? 'bg-purple-500 border-purple-400 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-400 border-transparent'}">${val1}</div>
+                <div class="p-2 rounded text-xs text-center border font-bold ${val2 === maxVal ? 'bg-purple-500 border-purple-400 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-400 border-transparent'}">${val2}</div>
+                <div class="p-2 rounded text-xs text-center border font-bold ${val3 === maxVal ? 'bg-purple-500 border-purple-400 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-400 border-transparent'}">${val3}</div>
+                <div class="p-2 rounded text-xs text-center border font-bold ${val4 === maxVal ? 'bg-purple-500 border-purple-400 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-400 border-transparent'}">${val4}</div>
+              </div>
+            </div>
+            
+            <div class="p-4 rounded-lg bg-purple-500/10 border border-purple-500/20 text-center">
+              <p class="text-xs uppercase tracking-wider opacity-60 text-purple-600 dark:text-purple-300 font-semibold">Max Pooling (2x2)</p>
+              <p class="text-xs block my-1">Máximo de { ${val1}, ${val2}, ${val3}, ${val4} }</p>
+              <span class="text-2xl font-bold text-purple-600 dark:text-purple-400">${maxVal}</span>
+            </div>
+          </div>
+          <p class="text-xs opacity-85 leading-relaxed">
+            📢 <strong>Análisis del Docente:</strong> El submuestreo de <strong>Max Pooling</strong> reduce un 75% las dimensiones espaciales de la matriz (reduciendo de 4x4 a 2x2). Esto acorta el coste computacional drásticamente, previniendo el sobreajuste (overfitting) y otorgando <strong>invarianza frente a pequeñas traslaciones o distorsiones espaciales</strong> del objeto de entrada.
+          </p>
+        `;
+      }
+    }
+
+    // --- ANIMACIONES (AUTO-PLAY BARRIDO) ---
+    function togglePlay() {
+      state.isPlaying = !state.isPlaying;
+      const btn = document.getElementById('play-btn');
+      const text = document.getElementById('play-btn-text');
+      const icon = document.getElementById('play-btn-icon');
+
+      if (state.isPlaying) {
+        btn.className = "py-2 px-4 rounded-lg font-bold text-xs flex items-center gap-2 transition shadow bg-red-600 hover:bg-red-700 text-white";
+        text.innerText = "Pausar Barrido";
+        icon.innerText = "⏸";
+        startInterval();
+      } else {
+        btn.className = "py-2 px-4 rounded-lg font-bold text-xs flex items-center gap-2 transition shadow bg-emerald-600 hover:bg-emerald-700 text-white";
+        text.innerText = "Auto-Barrido";
+        icon.innerText = "▶";
+        clearInterval(state.timerId);
+      }
+    }
+
+    function startInterval() {
+      state.timerId = setInterval(() => {
+        const outDims = getOutputDimensions();
+        const maxRows = state.activeTab === 'pool' ? Math.floor(outDims.rows / 2) : outDims.rows;
+        const maxCols = state.activeTab === 'pool' ? Math.floor(outDims.cols / 2) : outDims.cols;
+
+        let nextC = state.hoveredCell.c + 1;
+        let nextR = state.hoveredCell.r;
+
+        if (nextC >= maxCols) {
+          nextC = 0;
+          nextR += 1;
+        }
+        if (nextR >= maxRows) {
+          nextR = 0;
+        }
+
+        state.hoveredCell = { r: nextR, c: nextC };
+        updateSimulator();
+      }, state.playSpeed);
+    }
+
+    // --- FUNCIÓN DE DESCARGA DEL ARCHIVO (HTML INTEGRADO) ---
+    function downloadSimulator() {
+      const htmlContent = document.documentElement.outerHTML;
+      const blob = new Blob([`<!DOCTYPE html>\n` + htmlContent], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'simulador_cnn_interactivo.html';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+  </script>
+
+</body>
+</html>

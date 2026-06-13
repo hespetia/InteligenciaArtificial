@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crónicas de la IA: El Museo Interactivo</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            classic: '#0ea5e9',    // Teal / Blue sky
+                            generative: '#8b5cf6', // Violet
+                            agentic: '#10b981',    // Emerald
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.5; }
+            100% { transform: scale(0.95); opacity: 1; }
+        }
+        .animate-pulse-ring {
+            animation: pulse-ring 2s infinite;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-300 min-h-screen flex flex-col">
+
+    <!-- Top Navigation Bar -->
+    <header class="sticky top-0 z-40 backdrop-blur-md bg-white/80 dark:bg-slate-950/80 border-b border-slate-200 dark:border-slate-800 transition-colors duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <!-- Brand Logo -->
+            <div class="flex items-center space-x-3">
+                <span class="text-2xl">⚡</span>
+                <div>
+                    <h1 class="font-extrabold text-lg tracking-tight bg-gradient-to-r from-sky-500 via-purple-500 to-emerald-500 bg-clip-text text-transparent">
+                        CRÓNICAS DE LA IA
+                    </h1>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Museo Histórico e Interactivo</p>
+                </div>
+            </div>
+
+            <!-- Global Progress Indicator & Controls -->
+            <div class="flex items-center space-x-4">
+                <!-- Theme Switcher Button -->
+                <button id="theme-toggle" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-200 dark:hover:bg-slate-800 transition-all duration-200 shadow-sm" aria-label="Cambiar tema">
+                    <span id="theme-icon-light" class="hidden dark:inline text-amber-400">☀️ Modo Claro</span>
+                    <span id="theme-icon-dark" class="inline dark:hidden text-indigo-600">🌙 Modo Oscuro</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Dynamic Container -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col lg:flex-row gap-8">
+        
+        <!-- Left Sidebar: Era Navigation & Progress Timeline -->
+        <aside class="lg:w-1/4 flex flex-col gap-6">
+            <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm transition-colors duration-300">
+                <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-4">Línea del Tiempo</h2>
+                
+                <!-- Timeline Steps -->
+                <nav class="space-y-4">
+                    <!-- Era 1 Button -->
+                    <button onclick="switchEra(0)" id="nav-era-0" class="w-full text-left p-4 rounded-xl border transition-all duration-200 flex items-start gap-3 border-sky-500/30 bg-sky-50/50 dark:bg-sky-950/20">
+                        <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-sky-500 text-white font-bold text-sm">I</span>
+                        <div>
+                            <p class="font-bold text-sm text-sky-600 dark:text-sky-400">IA Clásica</p>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">1950 - 2010 • Símbolos y Reglas</p>
+                        </div>
+                    </button>
+
+                    <!-- Era 2 Button -->
+                    <button onclick="switchEra(1)" id="nav-era-1" class="w-full text-left p-4 rounded-xl border transition-all duration-200 flex items-start gap-3 border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800">
+                        <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-300 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-sm">II</span>
+                        <div>
+                            <p class="font-bold text-sm text-slate-700 dark:text-slate-300">IA Generativa</p>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">2011 - 2023 • Redes y Creación</p>
+                        </div>
+                    </button>
+
+                    <!-- Era 3 Button -->
+                    <button onclick="switchEra(2)" id="nav-era-2" class="w-full text-left p-4 rounded-xl border transition-all duration-200 flex items-start gap-3 border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800">
+                        <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-300 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-sm">III</span>
+                        <div>
+                            <p class="font-bold text-sm text-slate-700 dark:text-slate-300">IA Agéntica</p>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">2024 - Presente • Autonomía</p>
+                        </div>
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Quick Fact / Quote Card -->
+            <div class="bg-gradient-to-br from-slate-900 to-slate-800 text-white p-6 rounded-2xl border border-slate-800 shadow-md">
+                <div class="flex items-center gap-2 text-amber-400 mb-3">
+                    <span>💡</span>
+                    <span class="text-xs font-bold uppercase tracking-wider">Dato del Historiador</span>
+                </div>
+                <p id="fact-text" class="text-xs text-slate-300 leading-relaxed italic">
+                    "La Conferencia de Dartmouth en 1956 duró casi dos meses y sentó las bases teóricas de lo que hoy consideramos inteligencia sintáctica."
+                </p>
+            </div>
+        </aside>
+
+        <!-- Right Side: Content Area (Splits into narrative and interactive simulation) -->
+        <section class="lg:w-3/4 flex flex-col gap-8">
+            
+            <!-- Dynamic Era Header / Hero Banner -->
+            <div id="era-banner" class="p-8 rounded-3xl bg-gradient-to-r from-sky-500/10 to-transparent border border-sky-500/20 transition-all duration-300">
+                <span id="era-badge" class="px-3 py-1 rounded-full text-xs font-semibold bg-sky-500/20 text-sky-600 dark:text-sky-400 border border-sky-500/30">
+                    Era I: La Era Fundacional
+                </span>
+                <h2 id="era-title" class="text-3xl font-extrabold mt-4 text-slate-900 dark:text-white">
+                    La Era de la IA Clásica
+                </h2>
+                <p id="era-subtitle" class="text-slate-600 dark:text-slate-300 mt-2 text-md leading-relaxed">
+                    Símbolos, heurística y la creencia de que la mente humana puede modelarse mediante pura lógica matemática formal.
+                </p>
+            </div>
+
+            <!-- Two-Column Main Workspace -->
+            <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+                
+                <!-- Left Column: The Historical Narrative & Details -->
+                <div class="flex flex-col gap-6">
+                    <!-- Milestone Card -->
+                    <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm transition-colors duration-300">
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="text-2xl">📌</span>
+                            <h3 class="font-bold text-lg text-slate-900 dark:text-white">Hito Histórico Fundacional</h3>
+                        </div>
+                        <p id="era-milestone-desc" class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                            En el verano de 1956, un grupo de mentes brillantes (John McCarthy, Marvin Minsky, Claude Shannon, entre otros) se reunió en el Dartmouth College. Creían que "cada aspecto del aprendizaje o cualquier otra característica de la inteligencia puede ser descrita con tanta precisión que una máquina puede simularla". Nació formalmente la disciplina científica de la IA.
+                        </p>
+                    </div>
+
+                    <!-- Technology Card -->
+                    <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm transition-colors duration-300">
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="text-2xl">⚙️</span>
+                            <h3 class="font-bold text-lg text-slate-900 dark:text-white">Revolución Tecnológica</h3>
+                        </div>
+                        <p id="era-tech-desc" class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                            Sistemas basados en reglas, lógica formal y árboles de decisión. El enfoque primordial fue la *IA Simbólica*: el procesamiento de representaciones explícitas de hechos del mundo mediante reglas lógicas rígidas de tipo "Si (X) entonces (Y)". No existía aprendizaje autónomo a partir de datos masivos; la inteligencia debía ser programada explícitamente por ingenieros del conocimiento humano.
+                        </p>
+                    </div>
+
+                    <!-- Global Impact Card -->
+                    <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm transition-colors duration-300">
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="text-2xl">🌍</span>
+                            <h3 class="font-bold text-lg text-slate-900 dark:text-white">Impacto en el Mundo</h3>
+                        </div>
+                        <p id="era-impact-desc" class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                            Permitió las primeras automatizaciones logísticas complejas, el nacimiento de lenguajes como Lisp, y coronó hitos mediáticos como la victoria de Deep Blue de IBM sobre Garry Kasparov en 1997. Sin embargo, su rigidez ante el ruido del mundo real y la falta de potencia de cómputo provocó los infames "Inviernos de la IA".
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Right Column: Interactive Sandbox (Dynamic based on selected Era) -->
+                <div class="flex flex-col gap-6">
+                    <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 overflow-hidden flex flex-col h-full transition-colors duration-300 min-h-[480px]">
+                        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4 mb-4">
+                            <div class="flex items-center gap-2">
+                                <span class="relative flex h-3 w-3">
+                                    <span class="animate-pulse-ring absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
+                                    <span id="sandbox-pulse-dot" class="relative inline-flex rounded-full h-3 w-3 bg-sky-500"></span>
+                                </span>
+                                <h3 class="font-bold text-sm tracking-wide uppercase text-slate-500 dark:text-slate-400">Sandbox de Simulación</h3>
+                            </div>
+                            <span id="sandbox-label" class="text-xs bg-sky-500/10 text-sky-600 dark:text-sky-400 font-bold px-2.5 py-1 rounded-md">
+                                Motor de Reglas
+                            </span>
+                        </div>
+
+                        <!-- Sandbox Content Wrapper -->
+                        <div id="sandbox-content" class="flex-grow flex flex-col justify-between">
+                            <!-- Dynamically populated by JS based on Era -->
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Interactive Decision & Trivia Card -->
+            <div class="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-md transition-colors duration-300">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div>
+                        <span class="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Punto de Decisión e Interacción</span>
+                        <h3 class="text-xl font-bold mt-1 text-slate-900 dark:text-white">Desafío Histórico</h3>
+                        <p id="trivia-question" class="text-sm text-slate-600 dark:text-slate-300 mt-2 max-w-xl">
+                            ¿Por qué los sistemas expertos de la IA Clásica terminaron estancándose y provocaron el inicio del "Invierno de la IA"?
+                        </p>
+                    </div>
+                    <div id="trivia-score" class="text-xs font-semibold px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                        Progreso: 0/3 Desafíos
+                    </div>
+                </div>
+
+                <!-- Trivia Options Grid -->
+                <div id="trivia-options" class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-6">
+                    <!-- Dynamically Populated Options -->
+                </div>
+
+                <!-- Next Actions (Unlocked after interaction or directly accessible) -->
+                <div class="border-t border-slate-100 dark:border-slate-800 mt-8 pt-6 flex flex-wrap gap-4 items-center justify-between">
+                    <button onclick="openDeepDiveModal()" class="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold text-sm transition-all duration-200">
+                        🔍 Profundizar en Subtema
+                    </button>
+                    
+                    <button id="next-era-btn" onclick="goToNextEra()" class="px-6 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-semibold text-sm transition-all duration-200 shadow-md flex items-center gap-2">
+                        <span>Avanzar a Siguiente Era</span>
+                        <span>→</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-200 dark:border-slate-800 py-6 mt-12 transition-colors duration-300">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500 dark:text-slate-400">
+            Crónicas de la IA © 2026 • Diseñado con rigurosidad histórica y tecnología responsiva moderna.
+        </div>
+    </footer>
+
+    <!-- Deep Dive Modal -->
+    <div id="deep-dive-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm hidden">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-2xl w-full p-8 shadow-2xl relative overflow-hidden transition-all transform scale-95 duration-200">
+            <button onclick="closeDeepDiveModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xl font-bold p-2">✕</button>
+            
+            <div class="flex items-center gap-3 mb-4">
+                <span id="modal-icon" class="text-3xl">📘</span>
+                <div>
+                    <span id="modal-subtitle" class="text-xs font-bold uppercase tracking-wider text-sky-500">Documental Histórico</span>
+                    <h3 id="modal-title" class="text-2xl font-bold text-slate-900 dark:text-white">Anatomía de Deep Blue</h3>
+                </div>
+            </div>
+
+            <div id="modal-body" class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed space-y-4 max-h-[400px] overflow-y-auto pr-2">
+                <!-- Dynamically Populated Content -->
+            </div>
+
+            <div class="border-t border-slate-100 dark:border-slate-800 mt-6 pt-4 flex justify-end">
+                <button onclick="closeDeepDiveModal()" class="px-5 py-2.5 rounded-xl bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 font-semibold text-sm hover:opacity-90 transition-opacity">
+                    Entendido, cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AUDIO NOTIFICATION ELEMENT -->
+    <audio id="success-sound" src="https://assets.mixkit.co/active_storage/sfx/2013/2013-84.wav" preload="auto" class="hidden"></audio>
+
+    <script>
+        // Data Structure for History Eras
+        const erasData = [
+            {
+                id: 0,
+                name: "IA Clásica",
+                badge: "Era I: La Era Fundacional (1950 - 2010)",
+                title: "La Era de la IA Clásica",
+                subtitle: "Símbolos, heurística y la creencia de que la mente humana puede modelarse mediante pura lógica matemática formal.",
+                milestone: "En el verano de 1956, un grupo de mentes brillantes (John McCarthy, Marvin Minsky, Claude Shannon, entre otros) se reunió en el Dartmouth College. Creían que \"cada aspecto del aprendizaje o cualquier otra característica de la inteligencia puede ser descrita con tanta precisión que una máquina puede simularla\". Nació formalmente la disciplina científica de la IA.",
+                tech: "Sistemas basados en reglas, lógica formal y árboles de decisión. El enfoque primordial fue la *IA Simbólica*: el procesamiento de representaciones explícitas de hechos del mundo mediante reglas lógicas rígidas de tipo \"Si (X) entonces (Y)\". No existía aprendizaje autónomo a partir de datos masivos; la inteligencia debía ser programada explícitamente por ingenieros del conocimiento humano.",
+                impact: "Permitió las primeras automatizaciones logísticas complejas, el nacimiento de lenguajes como Lisp, y coronó hitos mediáticos como la victoria de Deep Blue de IBM sobre Garry Kasparov en 1997. Sin embargo, su rigidez ante el ruido del mundo real y la falta de potencia de cómputo provocó los infames \"Inviernos de la IA\".",
+                colorClass: "sky",
+                fact: "La Conferencia de Dartmouth en 1956 duró casi dos meses y sentó las bases teóricas de lo que hoy consideramos inteligencia sintáctica.",
+                trivia: {
+                    question: "¿Por qué los sistemas expertos de la IA Clásica terminaron estancándose y provocaron el inicio del \"Invierno de la IA\"?",
+                    options: [
+                        { text: "Porque requerían programar manualmente reglas lógicas infinitas para cada situación, lo que imposibilitaba manejar la incertidumbre y el cambio.", correct: true, feedback: "¡Exacto! El 'cuello de botella de la adquisición del conocimiento' demostró que modelar cada regla del mundo a mano es un esfuerzo insostenible." },
+                        { text: "Porque los ordenadores de la época se destruían físicamente por exceso de calor al procesar datos simples.", correct: false, feedback: "No es correcto. Aunque el hardware era limitado, la limitación principal era la incapacidad de la lógica rígida para manejar excepciones del mundo real." },
+                        { text: "Porque la comunidad de investigadores decidió mutuamente de un día para otro dedicarse a la computación en la nube.", correct: false, feedback: "Incorrecto. Fue el declive del financiamiento militar y gubernamental debido a las promesas no cumplidas de los sistemas expertos lo que propició el declive." },
+                        { text: "Porque eran incapaces de usar el lenguaje de programación Python.", correct: false, feedback: "Incorrecto. Aunque Python es popular hoy, existía LISP (creado por John McCarthy), que era un lenguaje excelente para lógica simbólica." }
+                    ]
+                },
+                deepDive: {
+                    title: "La hazaña de Deep Blue (1997)",
+                    subtitle: "El clímax de la IA Simbólica",
+                    icon: "♟️",
+                    body: `
+                        <p>En mayo de 1997, el superordenador de IBM <strong>Deep Blue</strong> derrotó al campeón mundial de ajedrez Garry Kasparov en un encuentro a seis partidas. Fue un momento sísmico en la historia tecnológica.</p>
+                        <p class="mt-2"><strong>¿Cómo funcionaba?</strong> Deep Blue utilizaba un método clásico conocido como <strong>algoritmo de búsqueda en árboles con poda alfa-beta</strong> asistido por chips de hardware diseñados específicamente para el ajedrez. No 'comprendía' el juego; evaluaba hasta 200 millones de posiciones por segundo usando una función de evaluación heurística afinada minuciosamente por grandes maestros.</p>
+                        <p class="mt-2">Esta victoria representó el máximo logro de la IA basada en la 'fuerza bruta computational' y la representación rígida del conocimiento, pero también marcó el final de una era: la inteligencia no se limitaba a buscar eficientemente en un espacio de estados predefinido.</p>
+                    `
+                }
+            },
+            {
+                id: 1,
+                name: "IA Generativa",
+                badge: "Era II: La Era del Aprendizaje Profundo (2011 - 2023)",
+                title: "La Era de la IA Generativa",
+                subtitle: "Redes neuronales profundas que aprenden de patrones masivos de datos para pasar de predecir o clasificar, a CREAR nuevo conocimiento.",
+                milestone: "En 2017, investigadores de Google publicaron el revolucionario paper \"Attention Is All You Need\", introduciendo la arquitectura del Transformer. Esto abrió la puerta al desarrollo de grandes modelos capaces de procesar el contexto masivo del lenguaje y culminó con la histórica explosión pública de ChatGPT en noviembre de 2022.",
+                tech: "El paso fundamental fue el uso de arquitecturas de Redes Neuronales Profundas (Deep Learning) escaladas a miles de millones de parámetros. La arquitectura del Transformer eliminó la necesidad de procesar palabras secuencialmente, permitiendo paralelizar el entrenamiento sobre conjuntos de datos del tamaño de toda la web abierta.",
+                impact: "Democratización instantánea de la IA para miles de millones de personas. Transformó la creación de contenidos escritos, artísticos y de programación de software. Se pasó del análisis de datos de negocio a la automatización creativa y de producción de documentos de forma casi indistinguible del intelecto humano.",
+                colorClass: "violet",
+                fact: "El mecanismo de 'Atención' en un Transformer funciona de forma similar a cómo la visión humana se enfoca en palabras clave para descifrar un texto completo.",
+                trivia: {
+                    question: "¿Qué papel cumple el parámetro de la 'Temperatura' en los algoritmos de decodificación de la IA Generativa?",
+                    options: [
+                        { text: "Controla la velocidad física de procesamiento de la GPU para evitar sobrecalentamientos.", correct: false, feedback: "Incorrecto. No tiene que ver con la temperatura del hardware físico." },
+                        { text: "Regula el grado de creatividad o aleatoriedad en la selección de la siguiente palabra (token) predicha.", correct: true, feedback: "¡Perfecto! Una temperatura de 0 hace al modelo totalmente determinista, mientras que una temperatura alta aplana las probabilidades, haciéndolo creativo y propenso a inventar cosas." },
+                        { text: "Indica el número de capas de procesamiento que se activan dentro de la red del Transformer.", correct: false, feedback: "Incorrecto. El número de capas es un hiperparámetro estático establecido durante el diseño de la arquitectura del modelo." },
+                        { text: "Define el volumen de memoria caché que se limpia después de procesar un prompt.", correct: false, feedback: "Incorrecto. No tiene relación con los sistemas de caché del servidor." }
+                    ]
+                },
+                deepDive: {
+                    title: "La Arquitectura Transformer",
+                    subtitle: "El Motor de la Generación Moderna",
+                    icon: "🧠",
+                    body: `
+                        <p>Antes de 2017, procesar lenguaje natural era complejo. Modelos como las Redes Neuronales Recurrentes (RNN) leían palabra por palabra, lo que dificultaba recordar el inicio de un texto largo.</p>
+                        <p class="mt-2"><strong>Mecanismo de Auto-Atención:</strong> El gran descubrimiento del Transformer fue permitir que cada palabra en una secuencia examine y evalúe su relación con todas las demás palabras de la frase simultáneamente. En la frase 'La cuenta bancaria se cerró porque no tenía fondos', el modelo asocia instantáneamente 'fondos' con 'cuenta bancaria' y no con 'banco de plaza'.</p>
+                        <p class="mt-2">Esta escalabilidad paralela permitió entrenar modelos en clústeres gigantescos de GPUs, dando paso a los modelos de lenguaje masivos (LLMs) que dominan el mundo actual.</p>
+                    `
+                }
+            },
+            {
+                id: 2,
+                name: "IA Agéntica",
+                badge: "Era III: La Era de la Autonomía Funcional (2024 - Presente)",
+                title: "La Era de la IA Agéntica",
+                subtitle: "Sistemas que no solo conversan, sino que razonan de forma independiente, planifican acciones, usan herramientas digitales y ejecutan tareas complejas sin intervención humana constante.",
+                milestone: "A partir de 2024, el foco se trasladó del chat estático hacia los Agentes Autónomos Inteligentes. Frameworks de orquestación (como el paradigma ReAct, AutoGPT, y agentes codificadores de software cooperativos) demostraron la capacidad de planificar flujos lógicos, interactuar con el entorno y corregir sus propios errores de manera dinámica.",
+                tech: "Bucles dinámicos de razonamiento (como ReAct: Reason + Act), almacenamiento de memoria episódica a largo plazo y la capacidad nativa de interactuar con el mundo digital mediante llamadas autónomas a APIs, ejecución de código en entornos aislados de prueba y auto-reflexión crítica sobre sus propios fallos de planificación.",
+                impact: "Nacimiento de los primeros ingenieros de software, analistas de mercado e investigadores científicos artificiales autónomos. Redefinición drástica de la automatización empresarial de punta a punta, en la que un único agente gestiona flujos complejos de ingeniería, marketing, o soporte técnico colaborando de forma segura con seres humanos u otros agentes autónomos.",
+                colorClass: "emerald",
+                fact: "Los sistemas multi-agente operan emulando estructuras organizativas humanas, donde un agente actúa como supervisor y otros se especializan en tareas específicas.",
+                trivia: {
+                    question: "¿Cuál es la característica principal del patrón de diseño de agentes inteligentes conocido como ReAct (Reason + Act)?",
+                    options: [
+                        { text: "Es una librería frontend de JS para renderizar rostros de robots en 3D.", correct: false, feedback: "Incorrecto. Se refiere a un patrón cognitivo de IA, no a la popular librería React de desarrollo web de Meta." },
+                        { text: "Es un ciclo de pensamiento donde la IA escribe su razonamiento lógico antes de ejecutar una acción y evaluar su resultado para volver a planificar.", correct: true, feedback: "¡Exacto! El ciclo Pensamiento -> Acción -> Observación permite que el modelo depure lógicamente sus pasos antes de actuar y rectifique al ver los resultados." },
+                        { text: "Obliga a la IA a reaccionar ante los ruidos de voz del usuario de forma inmediata sin procesarlos.", correct: false, feedback: "Incorrecto. El procesamiento del lenguaje sigue siendo el núcleo del agente." },
+                        { text: "Es una técnica para bloquear que la IA acceda a internet por motivos de seguridad absoluta.", correct: false, feedback: "No es correcto. De hecho, ReAct fomenta que el agente use herramientas como motores de búsqueda web para complementar su conocimiento." }
+                    ]
+                },
+                deepDive: {
+                    title: "Ciclos ReAct y Planificación Cognitiva",
+                    subtitle: "Cómo piensan los Agentes Autónomos",
+                    icon: "🤖",
+                    body: `
+                        <p>Los grandes modelos de lenguaje (LLM) tradicionales son reactivos: toman un texto y predicen la continuación de una sola vez. Los <strong>Agentes Autónomos</strong> rompen esta limitación estructurando bucles recursivos de ejecución.</p>
+                        <p class="mt-2"><strong>El Ciclo ReAct (Razonar y Actuar):</strong></p>
+                        <ul class="list-disc pl-5 mt-2 space-y-1">
+                            <li><strong>Pensamiento (Thought):</strong> El agente desglosa el objetivo complejo en micro-tareas. Ej: 'Para saber el clima de mañana en París y empacar ropa, necesito consultar la previsión del tiempo'.</li>
+                            <li><strong>Acción (Action):</strong> Invoca una herramienta externa. Ej: Llama a la API de clima 'WeatherAPI(Paris)'.</li>
+                            <li><strong>Observación (Observation):</strong> Analiza la respuesta del sistema. Ej: 'La API retorna lluvia y 12°C'.</li>
+                            <li><strong>Bucle iterativo:</strong> Repite el proceso actualizando su memoria hasta lograr el objetivo final de manera independiente.</li>
+                        </ul>
+                    `
+                }
+            }
+        ];
+
+        // Global State variables
+        let currentEraIndex = 0;
+        let score = 0;
+        let answeredTrivia = {}; // stores answers per era ID
+
+        // Initialize App on DOM Ready
+        window.onload = function() {
+            setupTheme();
+            renderEra(currentEraIndex);
+            
+            // Register Navigation Click Event listeners
+            document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+        };
+
+        // Theme management
+        function setupTheme() {
+            const isDark = document.documentElement.classList.contains('dark');
+            updateThemeButtonUI(isDark);
+        }
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            const isDark = html.classList.toggle('dark');
+            updateThemeButtonUI(isDark);
+        }
+
+        function updateThemeButtonUI(isDark) {
+            const lightIcon = document.getElementById('theme-icon-light');
+            const darkIcon = document.getElementById('theme-icon-dark');
+            if (isDark) {
+                lightIcon.classList.remove('hidden');
+                darkIcon.classList.add('hidden');
+            } else {
+                lightIcon.classList.add('hidden');
+                darkIcon.classList.remove('hidden');
+            }
+        }
+
+        // Render Era Function (The core view controller)
+        function renderEra(index) {
+            currentEraIndex = index;
+            const era = erasData[index];
+
+            // Define brand colors based on active era
+            let brandColorHex = '#0ea5e9'; // sky
+            let brandBorderClass = 'border-sky-500/20';
+            let brandBgGrad = 'from-sky-500/10';
+            let brandBadgeClass = 'bg-sky-500/20 text-sky-600 dark:text-sky-400 border-sky-500/30';
+            let brandNextBtnClass = 'bg-sky-500 hover:bg-sky-600';
+
+            if (index === 1) {
+                brandColorHex = '#8b5cf6'; // violet
+                brandBorderClass = 'border-violet-500/20';
+                brandBgGrad = 'from-violet-500/10';
+                brandBadgeClass = 'bg-violet-500/20 text-violet-600 dark:text-violet-400 border-violet-500/30';
+                brandNextBtnClass = 'bg-violet-500 hover:bg-violet-600';
+            } else if (index === 2) {
+                brandColorHex = '#10b981'; // emerald
+                brandBorderClass = 'border-emerald-500/20';
+                brandBgGrad = 'from-emerald-500/10';
+                brandBadgeClass = 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border-emerald-500/30';
+                brandNextBtnClass = 'bg-emerald-500 hover:bg-emerald-600';
+            }
+
+            // Update Navigation Highlighting
+            for (let i = 0; i < 3; i++) {
+                const navBtn = document.getElementById(`nav-era-${i}`);
+                const numBox = navBtn.querySelector('span');
+                const titleText = navBtn.querySelector('p');
+
+                if (i === index) {
+                    navBtn.className = `w-full text-left p-4 rounded-xl border transition-all duration-200 flex items-start gap-3 border-${erasData[i].colorClass}-500/30 bg-${erasData[i].colorClass}-50/50 dark:bg-${erasData[i].colorClass}-950/20 shadow-sm`;
+                    numBox.className = `flex items-center justify-center w-8 h-8 rounded-lg bg-${erasData[i].colorClass}-500 text-white font-bold text-sm`;
+                    titleText.className = `font-bold text-sm text-${erasData[i].colorClass}-600 dark:text-${erasData[i].colorClass}-400`;
+                } else {
+                    navBtn.className = "w-full text-left p-4 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200 flex items-start gap-3";
+                    numBox.className = "flex items-center justify-center w-8 h-8 rounded-lg bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-400 font-bold text-sm";
+                    titleText.className = "font-bold text-sm text-slate-700 dark:text-slate-300";
+                }
+            }
+
+            // Update Banner details
+            const banner = document.getElementById('era-banner');
+            banner.className = `p-8 rounded-3xl bg-gradient-to-r ${brandBgGrad} to-transparent border ${brandBorderClass} transition-all duration-300`;
+            
+            const badge = document.getElementById('era-badge');
+            badge.className = `px-3 py-1 rounded-full text-xs font-semibold ${brandBadgeClass}`;
+            badge.textContent = era.badge;
+
+            document.getElementById('era-title').textContent = era.title;
+            document.getElementById('era-subtitle').textContent = era.subtitle;
+
+            // Update Historian Fact
+            document.getElementById('fact-text').textContent = `"${era.fact}"`;
+
+            // Update Narratives
+            document.getElementById('era-milestone-desc').textContent = era.milestone;
+            document.getElementById('era-tech-desc').textContent = era.tech;
+            document.getElementById('era-impact-desc').textContent = era.impact;
+
+            // Update Sandbox Headers
+            const pulseDot = document.getElementById('sandbox-pulse-dot');
+            pulseDot.className = `relative inline-flex rounded-full h-3 w-3 bg-${era.colorClass}-500`;
+            
+            const sandboxLabel = document.getElementById('sandbox-label');
+            sandboxLabel.className = `text-xs bg-${era.colorClass}-500/10 text-${era.colorClass}-600 dark:text-${era.colorClass}-400 font-bold px-2.5 py-1 rounded-md`;
+            
+            if (index === 0) sandboxLabel.textContent = "Motor de Reglas";
+            else if (index === 1) sandboxLabel.textContent = "Decodificador LLM";
+            else if (index === 2) sandboxLabel.textContent = "Agente Autónomo";
+
+            // Populate Sandbox Visual / Logic container
+            renderSandbox(index);
+
+            // Populate Trivia Section
+            document.getElementById('trivia-question').textContent = era.trivia.question;
+            renderTriviaOptions(era.trivia.options, index);
+            updateTriviaProgressHeader();
+
+            // Setup Next Action Button Class
+            const nextBtn = document.getElementById('next-era-btn');
+            if (index === 2) {
+                nextBtn.innerHTML = `<span>Finalizar Visita del Museo</span> <span>🎉</span>`;
+                nextBtn.className = `px-6 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-semibold text-sm transition-all duration-200 shadow-md flex items-center gap-2`;
+            } else {
+                nextBtn.innerHTML = `<span>Avanzar a Siguiente Era</span> <span>→</span>`;
+                nextBtn.className = `px-6 py-2.5 rounded-xl ${brandNextBtnClass} text-white font-semibold text-sm transition-all duration-200 shadow-md flex items-center gap-2`;
+            }
+        }
+
+        function switchEra(index) {
+            if (index < 0 || index > 2) return;
+            renderEra(index);
+        }
+
+        function goToNextEra() {
+            if (currentEraIndex < 2) {
+                switchEra(currentEraIndex + 1);
+            } else {
+                // Completed! Show custom modal celebration
+                showCelebrationModal();
+            }
+        }
+
+        // ==========================================
+        // TRIVIA LOGIC
+        // ==========================================
+        function renderTriviaOptions(options, eraId) {
+            const container = document.getElementById('trivia-options');
+            container.innerHTML = '';
+
+            const isAnswered = answeredTrivia.hasOwnProperty(eraId);
+            const savedAnswerIndex = answeredTrivia[eraId];
+
+            options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left p-4 rounded-xl border text-sm transition-all duration-200 flex flex-col justify-between items-start ";
+
+                if (isAnswered) {
+                    btn.disabled = true;
+                    if (opt.correct) {
+                        btn.classList.add('bg-emerald-500/10', 'border-emerald-500/50', 'text-emerald-800', 'dark:text-emerald-300');
+                    } else if (savedAnswerIndex === idx) {
+                        btn.classList.add('bg-rose-500/10', 'border-rose-500/50', 'text-rose-800', 'dark:text-rose-300');
+                    } else {
+                        btn.classList.add('bg-slate-50', 'dark:bg-slate-900', 'border-slate-200', 'dark:border-slate-800', 'text-slate-400');
+                    }
+                } else {
+                    btn.classList.add('bg-slate-50', 'dark:bg-slate-900', 'border-slate-200', 'dark:border-slate-800', 'hover:border-indigo-500/40', 'hover:bg-slate-100', 'dark:hover:bg-slate-800', 'text-slate-700', 'dark:text-slate-300');
+                    btn.onclick = () => submitAnswer(eraId, idx, opt.correct);
+                }
+
+                // Title layout
+                const indicatorText = isAnswered && opt.correct ? "✅ Respuesta Correcta" : (isAnswered && savedAnswerIndex === idx ? "❌ Incorrecto" : `Opción ${idx + 1}`);
+                
+                let htmlContent = `<span class="text-xs font-bold uppercase tracking-wider mb-1 block opacity-70">${indicatorText}</span>`;
+                htmlContent += `<p class="font-medium">${opt.text}</p>`;
+
+                if (isAnswered && (opt.correct || savedAnswerIndex === idx)) {
+                    htmlContent += `<p class="text-xs mt-2 italic border-t border-black/5 dark:border-white/5 pt-2 w-full">${opt.feedback}</p>`;
+                }
+
+                btn.innerHTML = htmlContent;
+                container.appendChild(btn);
+            });
+        }
+
+        function submitAnswer(eraId, idx, isCorrect) {
+            answeredTrivia[eraId] = idx;
+            if (isCorrect) {
+                score++;
+                playAudioSuccess();
+            }
+            renderEra(currentEraIndex); // rerender to update UI with feedback
+        }
+
+        function updateTriviaProgressHeader() {
+            const count = Object.keys(answeredTrivia).length;
+            document.getElementById('trivia-score').textContent = `Desafíos Completados: ${count}/3 (Aciertos: ${score})`;
+        }
+
+        function playAudioSuccess() {
+            try {
+                const snd = document.getElementById("success-sound");
+                snd.volume = 0.3;
+                snd.play().catch(()=>{});
+            } catch (e) {}
+        }
+
+        // ==========================================
+        // DEEP DIVE MODAL
+        // ==========================================
+        function openDeepDiveModal() {
+            const era = erasData[currentEraIndex];
+            const modal = document.getElementById('deep-dive-modal');
+            
+            document.getElementById('modal-icon').textContent = era.deepDive.icon;
+            document.getElementById('modal-subtitle').textContent = era.deepDive.subtitle;
+            document.getElementById('modal-title').textContent = era.deepDive.title;
+            document.getElementById('modal-body').innerHTML = era.deepDive.body;
+
+            modal.classList.remove('hidden');
+        }
+
+        function closeDeepDiveModal() {
+            const modal = document.getElementById('deep-dive-modal');
+            modal.classList.add('hidden');
+        }
+
+        function showCelebrationModal() {
+            const modal = document.getElementById('deep-dive-modal');
+            document.getElementById('modal-icon').textContent = "🎉";
+            document.getElementById('modal-subtitle').textContent = "¡Felicitaciones!";
+            document.getElementById('modal-title').textContent = "Has completado la Expedición de IA";
+            
+            const scorePercent = Math.round((score / 3) * 100);
+            
+            document.getElementById('modal-body').innerHTML = `
+                <div class="text-center py-4">
+                    <p class="text-lg font-semibold mb-2">¡Completaste con éxito tu visita interactiva a las tres eras de la Inteligencia Artificial!</p>
+                    <div class="inline-block p-4 bg-emerald-500/10 text-emerald-500 rounded-2xl border border-emerald-500/20 font-bold text-3xl my-4">
+                        Puntuación: ${score} / 3 Correctas (${scorePercent}%)
+                    </div>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-2">
+                        Has viajado desde las rigurosas deducciones lógicas de los sistemas expertos clásicos de 1956, pasando por la explosión estadística generadora de los Transformers, hasta la autonomía dinámica y auto-reflexión de los modernos ciclos agénticos de la actualidad.
+                    </p>
+                    <p class="text-sm font-semibold text-slate-800 dark:text-slate-200 mt-4">
+                        ¡El futuro de los sistemas inteligentes autónomos está ante nosotros!
+                    </p>
+                </div>
+            `;
+            modal.classList.remove('hidden');
+        }
+
+
+        // ==========================================
+        // SANDBOX ENGINES (HTML & JS RENDERERS)
+        // ==========================================
+        function renderSandbox(eraId) {
+            const container = document.getElementById('sandbox-content');
+            container.innerHTML = '';
+
+            if (eraId === 0) {
+                initClassicalSandbox(container);
+            } else if (eraId === 1) {
+                initGenerativeSandbox(container);
+            } else if (eraId === 2) {
+                initAgenticSandbox(container);
+            }
+        }
+
+        // --- ERA 1: CLASSICAL IA (DECISION TREE EXPLAINER) ---
+        let currentTreeNode = 'inicio';
+        const decisionTreeData = {
+            inicio: {
+                question: "¿El elemento analizado posee vida orgánica vegetal o animal?",
+                options: [
+                    { text: "Sí, tiene vida", next: "vida" },
+                    { text: "No, es inanimado", next: "inanimado" }
+                ]
+            },
+            vida: {
+                question: "¿Este ser vivo posee la capacidad física para volar en el aire?",
+                options: [
+                    { text: "Sí, vuela", result: "🦅 Águila Real / Ave" },
+                    { text: "No vuela", result: "🐈 Gato Doméstico / Felino" }
+                ]
+            },
+            inanimado: {
+                question: "¿Este objeto inanimado requiere electricidad para su uso principal?",
+                options: [
+                    { text: "Sí, usa electricidad", result: "💻 Computadora Digital" },
+                    { text: "No usa electricidad", result: "📖 Libro de Papel impreso" }
+                ]
+            }
+        };
+
+        function initClassicalSandbox(container) {
+            currentTreeNode = 'inicio';
+            renderClassicalStep(container);
+        }
+
+        function renderClassicalStep(container) {
+            container.innerHTML = '';
+            const node = decisionTreeData[currentTreeNode];
+
+            // Title info
+            const header = document.createElement('div');
+            header.className = "space-y-2 mb-4";
+            header.innerHTML = `
+                <p class="text-xs font-bold tracking-wide uppercase text-slate-400 dark:text-slate-500">Razonamiento Simbólico Lógico</p>
+                <h4 class="font-bold text-md text-slate-800 dark:text-slate-200">Simulador de Sistema Experto Clásico</h4>
+                <p class="text-xs text-slate-500 dark:text-slate-400">Prueba cómo las reglas rígidas preprogramadas clasificaban información mediante bifurcaciones binarias deterministas.</p>
+            `;
+            container.appendChild(header);
+
+            // Flow Visualizer card
+            const flowCard = document.createElement('div');
+            flowCard.className = "bg-slate-50 dark:bg-slate-950 p-4 rounded-xl border border-slate-100 dark:border-slate-800 flex-grow flex flex-col justify-center gap-4 text-center my-2 min-h-[160px]";
+
+            if (node.question) {
+                flowCard.innerHTML = `
+                    <div class="text-xs font-bold text-sky-500 uppercase tracking-widest">Evaluando Regla IF-THEN</div>
+                    <p class="font-semibold text-sm text-slate-800 dark:text-slate-200 px-4">${node.question}</p>
+                    <div class="text-[10px] text-slate-400 italic">Estado Actual: IF { nodo: "${currentTreeNode}" }</div>
+                `;
+            } else {
+                flowCard.innerHTML = `
+                    <div class="text-xs font-bold text-emerald-500 uppercase tracking-widest">Resultado Obtenido (Deducción)</div>
+                    <p class="font-bold text-2xl text-slate-900 dark:text-white my-1">${node.result}</p>
+                    <p class="text-[10px] text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 py-1 px-3 rounded-full inline-block mx-auto">Regla inferida con éxito</p>
+                `;
+            }
+            container.appendChild(flowCard);
+
+            // Button controls
+            const btnGroup = document.createElement('div');
+            btnGroup.className = "grid grid-cols-2 gap-2 mt-2";
+
+            if (node.options) {
+                node.options.forEach(opt => {
+                    const btn = document.createElement('button');
+                    btn.className = "py-2 px-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-semibold hover:border-sky-500 hover:text-sky-500 transition-colors";
+                    btn.textContent = opt.text;
+                    btn.onclick = () => {
+                        currentTreeNode = opt.next || opt;
+                        renderClassicalStep(container);
+                    };
+                    btnGroup.appendChild(btn);
+                });
+            } else {
+                const resetBtn = document.createElement('button');
+                resetBtn.className = "col-span-2 py-2 px-4 rounded-xl bg-sky-500 hover:bg-sky-600 text-white text-xs font-semibold transition-colors";
+                resetBtn.textContent = "🔄 Reiniciar Árbol de Reglas";
+                resetBtn.onclick = () => {
+                    currentTreeNode = 'inicio';
+                    renderClassicalStep(container);
+                };
+                btnGroup.appendChild(resetBtn);
+            }
+            container.appendChild(btnGroup);
+        }
+
+        // --- ERA 2: GENERATIVE IA (TOKEN-BY-TOKEN LLM PREDICTION DECODER) ---
+        let promptVal = "¿Qué es el universo?";
+        let tempValue = 0.7;
+        let isGeneratingTokens = false;
+
+        function initGenerativeSandbox(container) {
+            container.innerHTML = '';
+            
+            // Layout Structure
+            const header = document.createElement('div');
+            header.className = "space-y-1 mb-3";
+            header.innerHTML = `
+                <h4 class="font-bold text-md text-slate-800 dark:text-slate-200">Decodificador Visual de Tokens LLM</h4>
+                <p class="text-xs text-slate-500 dark:text-slate-400">Entiende en tiempo real cómo los Transformers calculan la probabilidad de la siguiente palabra.</p>
+            `;
+            container.appendChild(header);
+
+            // Interactive Controls
+            const ctrlPanel = document.createElement('div');
+            ctrlPanel.className = "bg-slate-50 dark:bg-slate-950 p-4 rounded-xl border border-slate-100 dark:border-slate-800 mb-3 space-y-3";
+            
+            // Text Input
+            const labelPrompt = document.createElement('div');
+            labelPrompt.className = "flex flex-col gap-1";
+            labelPrompt.innerHTML = `
+                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Escribe tu Pregunta (Prompt)</label>
+                <input type="text" id="gen-prompt" value="${promptVal}" class="w-full text-xs p-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:outline-none focus:border-violet-500">
+            `;
+            ctrlPanel.appendChild(labelPrompt);
+
+            // Slider Temperature
+            const labelTemp = document.createElement('div');
+            labelTemp.className = "flex flex-col gap-1";
+            labelTemp.innerHTML = `
+                <div class="flex justify-between text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                    <span>Temperatura (Aleatoriedad)</span>
+                    <span id="temp-val-display" class="text-violet-500">${tempValue}</span>
+                </div>
+                <input type="range" id="gen-temp" min="0.1" max="1.5" step="0.1" value="${tempValue}" class="w-full h-1 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-violet-500">
+            `;
+            ctrlPanel.appendChild(labelTemp);
+            container.appendChild(ctrlPanel);
+
+            // Generation Display Console
+            const consoleCard = document.createElement('div');
+            consoleCard.className = "bg-slate-950 text-slate-200 p-4 rounded-xl font-mono text-xs border border-slate-800 flex-grow flex flex-col justify-between min-h-[160px] relative";
+            consoleCard.innerHTML = `
+                <div>
+                    <span class="text-[9px] text-violet-400 font-bold block mb-2">// RESPUESTA GENERADA TOKEN POR TOKEN:</span>
+                    <p id="generated-token-text" class="leading-relaxed text-slate-100 min-h-[40px] italic">Escribe algo arriba y haz clic en Generar...</p>
+                </div>
+                <!-- Dynamic Token Weights Bar Chart inside Sandbox -->
+                <div id="token-probabilities-bar" class="mt-4 pt-3 border-t border-slate-800 hidden">
+                    <span class="text-[9px] text-slate-400 block mb-1">Cálculo de probabilidad del Siguiente Token:</span>
+                    <div id="prob-bars-stack" class="space-y-1.5">
+                        <!-- Placed dynamically during token generation -->
+                    </div>
+                </div>
+            `;
+            container.appendChild(consoleCard);
+
+            // Generate Trigger Button
+            const triggerBtn = document.createElement('button');
+            triggerBtn.id = "gen-action-btn";
+            triggerBtn.className = "w-full py-2.5 mt-3 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold transition-colors flex items-center justify-center gap-2";
+            triggerBtn.innerHTML = `<span>🔮 Generar Respuesta</span>`;
+            
+            triggerBtn.onclick = () => {
+                const promptInput = document.getElementById('gen-prompt');
+                const tempInput = document.getElementById('gen-temp');
+                promptVal = promptInput.value || "¿Qué es el universo?";
+                tempValue = parseFloat(tempInput.value);
+                
+                startTokenGeneration(tempValue);
+            };
+
+            container.appendChild(triggerBtn);
+
+            // Dynamic UI listener for input displays
+            document.getElementById('gen-temp').addEventListener('input', (e) => {
+                document.getElementById('temp-val-display').textContent = e.target.value;
+            });
+        }
+
+        function startTokenGeneration(temp) {
+            if (isGeneratingTokens) return;
+            isGeneratingTokens = true;
+
+            const btn = document.getElementById('gen-action-btn');
+            btn.disabled = true;
+            btn.innerHTML = `<span class="animate-spin inline-block w-3.5 h-3.5 border-2 border-white/50 border-t-white rounded-full"></span> <span>Calculando pesos...</span>`;
+
+            const textOutput = document.getElementById('generated-token-text');
+            const probSection = document.getElementById('token-probabilities-bar');
+            const probStack = document.getElementById('prob-bars-stack');
+
+            textOutput.textContent = '';
+            probSection.classList.remove('hidden');
+
+            // Hardcoded token pool mimicking neural network predictions based on prompt & temperature logic
+            const responseWords = ["El", "universo", "es", "un", "vasto", "conjunto", "de", "materia,", "energía", "y", "misterio", "infinito."];
+            
+            const nextAlternatives = [
+                { token: "universo", weight: 0.85, randomizer: 0.01 },
+                { token: "misterio", weight: 0.65, randomizer: 0.1 },
+                { token: "tejido", weight: 0.40, randomizer: 0.3 },
+                { token: "vacío", weight: 0.25, randomizer: 0.6 }
+            ];
+
+            let wordIndex = 0;
+            
+            function printNextWord() {
+                if (wordIndex < responseWords.length) {
+                    const word = responseWords[wordIndex];
+                    
+                    // Create highlighted wrapper to simulate Token segments in LLM visualizers
+                    const tokenSpan = document.createElement('span');
+                    tokenSpan.className = "inline-block px-1 bg-violet-500/20 text-violet-300 rounded border border-violet-500/30 mr-1 mb-1 transition-all duration-300 scale-95 opacity-0";
+                    tokenSpan.textContent = word;
+                    
+                    textOutput.appendChild(tokenSpan);
+                    setTimeout(() => {
+                        tokenSpan.classList.remove('scale-95', 'opacity-0');
+                    }, 50);
+
+                    // Show dynamic alternative calculations on the bar stack with Temperature influences
+                    probStack.innerHTML = '';
+                    
+                    // Shuffle slightly depending on Temperature (higher temperature = flatter distribution)
+                    const calculatedAlts = nextAlternatives.map(alt => {
+                        // Apply simulated temperature dispersion formula
+                        let finalProb = Math.exp(alt.weight / temp) / 10;
+                        if (finalProb > 1) finalProb = 0.98;
+                        return { token: alt.token, val: Math.round(finalProb * 100) };
+                    }).sort((a,b) => b.val - a.val);
+
+                    calculatedAlts.forEach(alt => {
+                        const barRow = document.createElement('div');
+                        barRow.className = "flex items-center gap-2";
+                        barRow.innerHTML = `
+                            <span class="w-16 text-right text-[10px] text-slate-400 font-semibold">${alt.token}</span>
+                            <div class="flex-grow bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                                <div class="bg-violet-500 h-full transition-all duration-300" style="width: ${alt.val}%"></div>
+                            </div>
+                            <span class="w-6 text-left text-[10px] text-violet-400 font-bold">${alt.val}%</span>
+                        `;
+                        probStack.appendChild(barRow);
+                    });
+
+                    wordIndex++;
+                    setTimeout(printNextWord, 400); // Word delivery cadence
+                } else {
+                    isGeneratingTokens = false;
+                    btn.disabled = false;
+                    btn.innerHTML = `<span>🔮 Generar Respuesta</span>`;
+                }
+            }
+
+            printNextWord();
+        }
+
+        // --- ERA 3: AGENTIC IA (AUTONOMOUS WORKFLOW GRID SIMULATOR) ---
+        let agentIntervalId = null;
+        let isAgentSimulating = false;
+        
+        // Simple 5x5 Grid Layout representation
+        // 0: Empty, 1: Obstacle (🪨), 2: Target (🏠 Base), 3: Wood Resource (🪵), 4: Agent (🤖)
+        const initialMap = [
+            [0, 0, 0, 0, 2],
+            [0, 1, 0, 0, 0],
+            [0, 0, 0, 1, 0],
+            [3, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0]
+        ];
+        
+        let mapState = JSON.parse(JSON.stringify(initialMap));
+        let agentPos = { r: 4, c: 4 }; // starts at bottom right
+        let agentState = "IDLE"; // IDLE, PLANNING, FORAGING, RETURNING, COMPLETED
+        let woodCollected = 0;
+        let currentTargetPos = null;
+
+        function initAgenticSandbox(container) {
+            // Clear prior states
+            clearInterval(agentIntervalId);
+            isAgentSimulating = false;
+            mapState = [
+                [0, 0, 0, 0, 2],
+                [0, 1, 0, 0, 0],
+                [0, 0, 0, 1, 0],
+                [3, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0]
+            ];
+            agentPos = { r: 4, c: 4 };
+            agentState = "IDLE";
+            woodCollected = 0;
+            currentTargetPos = null;
+
+            renderAgenticStep(container);
+        }
+
+        function renderAgenticStep(container) {
+            container.innerHTML = '';
+
+            // Layout Title
+            const header = document.createElement('div');
+            header.className = "space-y-1 mb-2";
+            header.innerHTML = `
+                <h4 class="font-bold text-md text-slate-800 dark:text-slate-200">Simulación del Sistema de Agente</h4>
+                <p class="text-xs text-slate-500 dark:text-slate-400">Mira al Agente Autónomo analizar su entorno, planificar, recolectar recursos (🪵), esquivar rocas (🪨) y construir su casa (🏠).</p>
+            `;
+            container.appendChild(header);
+
+            // Workspace: 2 cols inside sandbox (Grid on left, Live Thought-Stream logs on right)
+            const sandboxWorkspace = document.createElement('div');
+            sandboxWorkspace.className = "grid grid-cols-1 md:grid-cols-2 gap-4 flex-grow my-2";
+
+            // Grid render
+            const gridWrapper = document.createElement('div');
+            gridWrapper.className = "flex flex-col justify-center items-center bg-slate-50 dark:bg-slate-950 p-3 rounded-xl border border-slate-100 dark:border-slate-800";
+            
+            const gridContainer = document.createElement('div');
+            gridContainer.className = "grid grid-cols-5 gap-1.5 w-full max-w-[180px] aspect-square";
+
+            for (let r = 0; r < 5; r++) {
+                for (let c = 0; c < 5; c++) {
+                    const cell = document.createElement('div');
+                    cell.className = "flex items-center justify-center font-bold text-sm rounded-lg aspect-square border transition-all duration-300 ";
+
+                    // Paint elements based on map position
+                    if (agentPos.r === r && agentPos.c === c) {
+                        cell.textContent = "🤖";
+                        cell.classList.add('bg-emerald-500/20', 'border-emerald-500', 'animate-pulse');
+                    } else if (mapState[r][c] === 1) {
+                        cell.textContent = "🪨";
+                        cell.classList.add('bg-slate-200', 'dark:bg-slate-800', 'border-slate-300', 'dark:border-slate-700');
+                    } else if (mapState[r][c] === 2) {
+                        cell.textContent = "🏠";
+                        cell.classList.add('bg-indigo-500/10', 'border-indigo-500/40');
+                    } else if (mapState[r][c] === 3) {
+                        cell.textContent = "🪵";
+                        cell.classList.add('bg-amber-500/10', 'border-amber-500/40');
+                    } else {
+                        cell.textContent = "";
+                        cell.className = "border border-slate-100 dark:border-slate-900 rounded-lg aspect-square";
+                    }
+                    gridContainer.appendChild(cell);
+                }
+            }
+            gridWrapper.appendChild(gridContainer);
+
+            // Inventory stats indicators below grid
+            const statsGrid = document.createElement('div');
+            statsGrid.className = "flex justify-between w-full mt-3 text-[10px] uppercase font-bold text-slate-400 border-t border-slate-100 dark:border-slate-900 pt-2";
+            statsGrid.innerHTML = `
+                <span>Inventario: ${woodCollected > 0 ? "🪵 x1" : "Ninguno"}</span>
+                <span>Estado: <span class="text-emerald-500 font-bold">${agentState}</span></span>
+            `;
+            gridWrapper.appendChild(statsGrid);
+
+            sandboxWorkspace.appendChild(gridWrapper);
+
+            // Thoughts / Logs stream
+            const logsWrapper = document.createElement('div');
+            logsWrapper.className = "bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono text-[10px] text-slate-300 flex flex-col justify-between min-h-[160px]";
+            
+            let logsHtml = `<span class="text-[9px] text-emerald-400 font-bold block mb-1.5">// CADENA DE PENSAMIENTO (RE-ACT):</span>`;
+            logsHtml += `<div class="space-y-2 flex-grow overflow-y-auto max-h-[140px] pr-1">`;
+            
+            if (agentState === "IDLE") {
+                logsHtml += `
+                    <div class="text-slate-400 font-semibold">[PENSAMIENTO]: Esperando señal del operador.</div>
+                    <div class="text-slate-500">> Pulsa "Iniciar Agente" para comenzar la secuencia de planificación de tareas autónomas.</div>
+                `;
+            } else if (agentState === "PLANNING") {
+                logsHtml += `
+                    <div class="text-emerald-400 font-semibold">[PENSAMIENTO]: Objetivo general = Construir casa (🏠). Requisito: madera (🪵).</div>
+                    <div class="text-indigo-400">[ACCIÓN]: Buscar coordenadas de madera.</div>
+                    <div class="text-amber-400">[OBSERVACIÓN]: Recurso 🪵 localizado en coordenadas (3, 0). Planificando ruta de navegación óptima.</div>
+                `;
+            } else if (agentState === "FORAGING") {
+                logsHtml += `
+                    <div class="text-emerald-400 font-semibold">[PENSAMIENTO]: Moviendo hacia el recurso (🪵).</div>
+                    <div class="text-indigo-400">[ACCIÓN]: Paso en eje X/Y. Rodear obstáculos activos.</div>
+                    <div class="text-slate-400">> Coordenadas actuales del agente: (${agentPos.r}, ${agentPos.c})</div>
+                `;
+            } else if (agentState === "RETURNING") {
+                logsHtml += `
+                    <div class="text-emerald-400 font-semibold">[PENSAMIENTO]: Madera recolectada. Ahora debo llevarla a la Base de Construcción (🏠).</div>
+                    <div class="text-indigo-400">[ACCIÓN]: Calculando trayecto seguro a (0, 4). Evitando rocas colindantes.</div>
+                    <div class="text-slate-400">> Coordenadas actuales: (${agentPos.r}, ${agentPos.c})</div>
+                `;
+            } else if (agentState === "COMPLETED") {
+                logsHtml += `
+                    <div class="text-emerald-500 font-bold">[ÉXITO]: ¡Objetivo Principal Completado de Forma Autónoma!</div>
+                    <div class="text-indigo-400">[ACCIÓN]: Apagar bucles de decisión. Entrar en modo reposo energético.</div>
+                    <div class="text-slate-400">> Casa construida exitosamente sin intervención humana directa.</div>
+                `;
+            }
+            logsHtml += `</div>`;
+            logsWrapper.innerHTML = logsHtml;
+
+            sandboxWorkspace.appendChild(logsWrapper);
+            container.appendChild(sandboxWorkspace);
+
+            // Sandbox Buttons
+            const controlBtn = document.createElement('button');
+            controlBtn.id = "agent-action-btn";
+            controlBtn.className = "w-full py-2.5 mt-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold transition-all duration-200 flex items-center justify-center gap-2 shadow-md";
+            
+            if (isAgentSimulating) {
+                controlBtn.innerHTML = `<span>⏸️ Pausar Simulación</span>`;
+                controlBtn.onclick = () => {
+                    clearInterval(agentIntervalId);
+                    isAgentSimulating = false;
+                    renderAgenticStep(container);
+                };
+            } else {
+                if (agentState === "COMPLETED") {
+                    controlBtn.innerHTML = `<span>🔄 Reiniciar Simulación</span>`;
+                    controlBtn.onclick = () => initAgenticSandbox(container);
+                } else {
+                    controlBtn.innerHTML = `<span>🚀 Iniciar Agente Autónomo</span>`;
+                    controlBtn.onclick = () => {
+                        isAgentSimulating = true;
+                        runAgentSequence(container);
+                    };
+                }
+            }
+            container.appendChild(controlBtn);
+        }
+
+        // Agent behavior state loop execution
+        function runAgentSequence(container) {
+            renderAgenticStep(container);
+
+            agentIntervalId = setInterval(() => {
+                if (agentState === "IDLE") {
+                    agentState = "PLANNING";
+                    currentTargetPos = { r: 3, c: 0 }; // Wood target coordinates
+                } else if (agentState === "PLANNING") {
+                    agentState = "FORAGING";
+                } else if (agentState === "FORAGING") {
+                    // Navigate towards currentTargetPos (3, 0)
+                    moveAgentTowards(currentTargetPos);
+                    
+                    // Check if target reached
+                    if (agentPos.r === currentTargetPos.r && agentPos.c === currentTargetPos.c) {
+                        woodCollected = 1;
+                        mapState[3][0] = 0; // remove wood from grid
+                        agentState = "RETURNING";
+                        currentTargetPos = { r: 0, c: 4 }; // Home target coordinates
+                    }
+                } else if (agentState === "RETURNING") {
+                    // Navigate towards home
+                    moveAgentTowards(currentTargetPos);
+                    
+                    // Check if completed
+                    if (agentPos.r === currentTargetPos.r && agentPos.c === currentTargetPos.c) {
+                        agentState = "COMPLETED";
+                        isAgentSimulating = false;
+                        clearInterval(agentIntervalId);
+                        playAudioSuccess();
+                    }
+                }
+
+                renderAgenticStep(container);
+            }, 800); // Step iteration time
+        }
+
+        function moveAgentTowards(target) {
+            let nextRow = agentPos.r;
+            let nextCol = agentPos.c;
+
+            // Simple movement logic on grid, evaluating vertical then horizontal steps
+            if (agentPos.r !== target.r) {
+                nextRow += (target.r > agentPos.r) ? 1 : -1;
+            } else if (agentPos.c !== target.c) {
+                nextCol += (target.c > agentPos.c) ? 1 : -1;
+            }
+
+            // Simple Obstacle Avoidance logic: if next calculated position is a rock (1), bypass it dynamically
+            if (mapState[nextRow][nextCol] === 1) {
+                // Try moving along the alternative axis instead
+                if (agentPos.r !== target.r) {
+                    // Vertical block, attempt horizontal step
+                    nextRow = agentPos.r;
+                    nextCol = agentPos.c + (agentPos.c < 4 ? 1 : -1);
+                } else {
+                    // Horizontal block, attempt vertical step
+                    nextCol = agentPos.c;
+                    nextRow = agentPos.r + (agentPos.r < 4 ? 1 : -1);
+                }
+            }
+
+            // Apply validated movement boundaries
+            agentPos.r = Math.max(0, Math.min(4, nextRow));
+            agentPos.c = Math.max(0, Math.min(4, nextCol));
+        }
+
+    </script>
+</body>
+</html>

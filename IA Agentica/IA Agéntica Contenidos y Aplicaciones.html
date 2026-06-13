@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IA Agéntica: El Futuro de la Autonomía Digital</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <style>
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+        @media (max-width: 768px) {
+            .chart-container {
+                height: 300px;
+            }
+        }
+        .flow-node {
+            transition: all 0.3s ease;
+        }
+        .flow-node:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 font-sans leading-relaxed">
+    <header class="bg-indigo-700 text-white py-12 px-6 shadow-lg text-center">
+        <div class="max-w-4xl mx-auto">
+            <h1 class="text-4xl md:text-5xl font-extrabold mb-4">IA Agéntica: Contenidos y Aplicaciones</h1>
+            <p class="text-xl opacity-90">Análisis basado en la hoja de ruta de "image_1f4c97.png"</p>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-6 py-12">
+        <section class="mb-16">
+            <div class="bg-white rounded-2xl shadow-xl p-8 border-l-8 border-indigo-500">
+                <h2 class="text-3xl font-bold mb-6 text-indigo-900">1. Fundamentos: La Evolución de la Inteligencia</h2>
+                <p class="text-lg mb-8">
+                    La transición de la IA Generativa (GenAI) a la IA Agéntica representa un cambio de paradigma: pasamos de herramientas que simplemente responden a peticiones, a sistemas que operan bajo objetivos complejos. Según el contenido analizado, el núcleo de esta evolución es el ciclo de <strong>Percepción, Razonamiento y Acción</strong>.
+                </p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                    <div>
+                        <h3 class="text-xl font-semibold mb-4 text-indigo-700">De GenAI a Agentes</h3>
+                        <p class="mb-4">Mientras que la GenAI es principalmente reactiva, la IA Agéntica es proactiva y utiliza bucles de retroalimentación para ajustar su comportamiento en tiempo real.</p>
+                        <div class="chart-container">
+                            <canvas id="evolutionChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="space-y-6">
+                        <h3 class="text-xl font-semibold text-indigo-700">El Ciclo Operativo</h3>
+                        <div class="flex flex-col space-y-4">
+                            <div class="bg-blue-50 p-4 rounded-lg border border-blue-200 flow-node">
+                                <span class="font-bold text-blue-800">👁️ Percepción:</span> El agente absorbe datos del entorno (texto, sensores, APIs).
+                            </div>
+                            <div class="bg-indigo-50 p-4 rounded-lg border border-indigo-200 flow-node">
+                                <span class="font-bold text-indigo-800">🧠 Razonamiento:</span> Análisis mediante LLMs para decidir el siguiente paso óptimo.
+                            </div>
+                            <div class="bg-teal-50 p-4 rounded-lg border border-teal-200 flow-node">
+                                <span class="font-bold text-teal-800">⚡ Acción:</span> Ejecución de tareas mediante herramientas externas o llamadas a funciones.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-16">
+            <h2 class="text-3xl font-bold mb-8 text-center text-slate-800">2. El "Cerebro" del Agente</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bg-white p-8 rounded-2xl shadow-md border-t-4 border-emerald-500">
+                    <h3 class="text-2xl font-bold mb-4 text-emerald-700">Gestión de Memoria</h3>
+                    <p class="mb-6">Un agente eficaz requiere distinguir entre la memoria de trabajo inmediata y el conocimiento persistente a largo plazo para mantener el contexto de sus objetivos.</p>
+                    <div class="chart-container">
+                        <canvas id="memoryChart"></canvas>
+                    </div>
+                    <div class="mt-4 text-sm text-slate-600">
+                        * Representación de la capacidad de retención vs. velocidad de acceso en sistemas agénticos modernos.
+                    </div>
+                </div>
+                <div class="bg-white p-8 rounded-2xl shadow-md border-t-4 border-amber-500">
+                    <h3 class="text-2xl font-bold mb-4 text-amber-700">Técnicas de Planificación</h3>
+                    <p class="mb-4">El agente debe ser capaz de descomponer problemas complejos en subtareas ejecutables.</p>
+                    <ul class="space-y-3">
+                        <li class="flex items-start">
+                            <span class="mr-2 text-amber-600">●</span>
+                            <div><strong>Chain of Thought:</strong> Desglose secuencial del razonamiento.</div>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="mr-2 text-amber-600">●</span>
+                            <div><strong>ReAct:</strong> Combinación de razonamiento y acción inmediata.</div>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="mr-2 text-amber-600">●</span>
+                            <div><strong>Reflexión:</strong> Capacidad de autocrítica para corregir errores pasados.</div>
+                        </li>
+                    </ul>
+                    <div id="plotlyPlanning" class="mt-6" style="height: 250px;"></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-16">
+            <div class="bg-slate-900 text-white rounded-3xl p-10 shadow-2xl">
+                <h2 class="text-3xl font-bold mb-6 text-indigo-400">3. Ecosistemas y Frameworks</h2>
+                <p class="text-lg mb-10 opacity-80">
+                    Para construir estos agentes, la industria ha consolidado herramientas que facilitan la orquestación, la memoria y la conexión con el mundo real.
+                </p>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                    <div class="chart-container bg-white/5 rounded-xl p-4">
+                        <canvas id="frameworksChart"></canvas>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="p-6 bg-white/10 rounded-xl border border-white/20">
+                            <h4 class="font-bold text-lg mb-2">LangChain</h4>
+                            <p class="text-sm opacity-70">Líder en orquestación y encadenamiento de prompts.</p>
+                        </div>
+                        <div class="p-6 bg-white/10 rounded-xl border border-white/20">
+                            <h4 class="font-bold text-lg mb-2">AutoGPT</h4>
+                            <p class="text-sm opacity-70">Pionero en objetivos autónomos recursivos.</p>
+                        </div>
+                        <div class="p-6 bg-white/10 rounded-xl border border-white/20">
+                            <h4 class="font-bold text-lg mb-2">CrewAI</h4>
+                            <p class="text-sm opacity-70">Especializado en sistemas multi-agente colaborativos.</p>
+                        </div>
+                        <div class="p-6 bg-white/10 rounded-xl border border-white/20">
+                            <h4 class="font-bold text-lg mb-2">Microsoft Autogen</h4>
+                            <p class="text-sm opacity-70">Conversaciones complejas entre múltiples LLMs.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h2 class="text-3xl font-bold mb-8 text-slate-800">4. Aplicaciones y Taller Práctico</h2>
+            <p class="text-lg mb-8 text-center max-w-3xl mx-auto">
+                El diseño de un agente no es solo teoría. Las aplicaciones prácticas transforman industrias enteras al automatizar procesos que requieren toma de decisiones crítica.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-indigo-50 p-6 rounded-xl hover:bg-indigo-100 transition shadow-sm">
+                    <div class="text-3xl mb-3">🛠️</div>
+                    <h4 class="font-bold text-xl mb-2 text-indigo-900">Diseño de Agentes</h4>
+                    <p class="text-indigo-800">Definición de roles, herramientas disponibles y límites éticos de operación.</p>
+                </div>
+                <div class="bg-teal-50 p-6 rounded-xl hover:bg-teal-100 transition shadow-sm">
+                    <div class="text-3xl mb-3">💼</div>
+                    <h4 class="font-bold text-xl mb-2 text-teal-900">Agentes de Negocio</h4>
+                    <p class="text-teal-800">Automatización de prospección de ventas y atención al cliente autónoma.</p>
+                </div>
+                <div class="bg-rose-50 p-6 rounded-xl hover:bg-rose-100 transition shadow-sm">
+                    <div class="text-3xl mb-3">🧪</div>
+                    <h4 class="font-bold text-xl mb-2 text-rose-900">Taller Práctico</h4>
+                    <p class="text-rose-800">Implementación de flujos RAG (Retrieval Augmented Generation) con agentes.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-slate-200 py-8 mt-16 text-center text-slate-600">
+        <p>© 2024 - Basado en los contenidos de IA Agéntica</p>
+    </footer>
+
+    <script>
+        const wrapLabel = (label) => {
+            if (typeof label !== 'string') return label;
+            if (label.length <= 16) return label;
+            const words = label.split(' ');
+            const lines = [];
+            let currentLine = "";
+            words.forEach(word => {
+                if ((currentLine + word).length > 16) {
+                    lines.push(currentLine.trim());
+                    currentLine = word + " ";
+                } else {
+                    currentLine += word + " ";
+                }
+            });
+            lines.push(currentLine.trim());
+            return lines;
+        };
+
+        const tooltipConfig = {
+            callbacks: {
+                title: function(tooltipItems) {
+                    const item = tooltipItems[0];
+                    let label = item.chart.data.labels[item.dataIndex];
+                    if (Array.isArray(label)) {
+                        return label.join(' ');
+                    } else {
+                        return label;
+                    }
+                }
+            }
+        };
+
+        const ctxEvolution = document.getElementById('evolutionChart').getContext('2d');
+        new Chart(ctxEvolution, {
+            type: 'bar',
+            data: {
+                labels: [wrapLabel('IA Generativa Tradicional'), wrapLabel('IA Agéntica Autónoma')],
+                datasets: [{
+                    label: 'Grado de Autonomía',
+                    data: [35, 95],
+                    backgroundColor: ['#6366f1', '#14b8a6'],
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: tooltipConfig
+                },
+                scales: {
+                    y: { beginAtZero: true, max: 100 }
+                }
+            }
+        });
+
+        const ctxMemory = document.getElementById('memoryChart').getContext('2d');
+        new Chart(ctxMemory, {
+            type: 'radar',
+            data: {
+                labels: [wrapLabel('Memoria Corto Plazo'), wrapLabel('Contexto Ventana'), wrapLabel('Memoria Largo Plazo'), wrapLabel('Almacenamiento Vectorial'), wrapLabel('Persistencia')],
+                datasets: [
+                    {
+                        label: 'Capacidad Actual',
+                        data: [90, 85, 60, 95, 70],
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.2)'
+                    }
+                ]
+            },
+            options: {
+                maintainAspectRatio: false,
+                plugins: {
+                    tooltip: tooltipConfig
+                }
+            }
+        });
+
+        const ctxFrameworks = document.getElementById('frameworksChart').getContext('2d');
+        new Chart(ctxFrameworks, {
+            type: 'doughnut',
+            data: {
+                labels: [wrapLabel('Adopción LangChain'), wrapLabel('Crecimiento CrewAI'), wrapLabel('Uso AutoGPT'), wrapLabel('Otros Frameworks')],
+                datasets: [{
+                    data: [45, 25, 20, 10],
+                    backgroundColor: ['#4338ca', '#0d9488', '#f59e0b', '#64748b'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom', labels: { color: '#fff' } },
+                    tooltip: tooltipConfig
+                }
+            }
+        });
+
+        const planningData = [
+            {
+                x: ['Chain of Thought', 'ReAct', 'Tree of Thoughts'],
+                y: [70, 90, 85],
+                type: 'bar',
+                marker: { color: '#f59e0b' }
+            }
+        ];
+        const planningLayout = {
+            title: 'Eficacia de Técnicas',
+            margin: { t: 40, b: 40, l: 40, r: 20 },
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            plot_bgcolor: 'rgba(0,0,0,0)',
+            font: { family: 'sans-serif', size: 12 }
+        };
+        Plotly.newPlot('plotlyPlanning', planningData, planningLayout, { staticPlot: true });
+    </script>
+</body>
+</html>

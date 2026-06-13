@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Infografía: Evolución de la IA | Clásica → Generativa → Agentica</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: background-color 0.25s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-body);
+            color: var(--text-primary);
+            line-height: 1.4;
+            padding: 2rem 1.5rem;
+        }
+
+        /* Variables modo claro (por defecto) */
+        :root {
+            --bg-body: #f1f5f9;
+            --card-bg: #ffffff;
+            --text-primary: #0f172a;
+            --text-secondary: #334155;
+            --text-muted: #475569;
+            --border-light: #e2e8f0;
+            --shadow-sm: 0 8px 20px rgba(0,0,0,0.05), 0 2px 4px rgba(0,0,0,0.02);
+            --shadow-hover: 0 20px 25px -12px rgba(0,0,0,0.1);
+            --accent-blue: #3b82f6;
+            --accent-cyan: #06b6d4;
+            --accent-purple: #8b5cf6;
+            --accent-orange: #f97316;
+            --accent-green: #10b981;
+            --timeline-line: #cbd5e1;
+            --badge-bg: #f8fafc;
+            --toggle-bg: #e2e8f0;
+            --toggle-circle: #ffffff;
+            --code-bg: #f1f5f9;
+        }
+
+        /* Modo oscuro */
+        body.dark {
+            --bg-body: #0f172a;
+            --card-bg: #1e293b;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            --border-light: #334155;
+            --shadow-sm: 0 8px 20px rgba(0,0,0,0.3);
+            --shadow-hover: 0 20px 25px -12px rgba(0,0,0,0.4);
+            --accent-blue: #60a5fa;
+            --accent-cyan: #22d3ee;
+            --accent-purple: #a78bfa;
+            --accent-orange: #fb923c;
+            --accent-green: #34d399;
+            --timeline-line: #475569;
+            --badge-bg: #0f172a;
+            --toggle-bg: #334155;
+            --toggle-circle: #94a3b8;
+            --code-bg: #0f172a;
+        }
+
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+
+        /* header + modo oscuro */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+            gap: 1rem;
+        }
+        .title-section h1 {
+            font-size: 1.9rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            letter-spacing: -0.3px;
+        }
+        .title-section p {
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+            font-size: 0.95rem;
+        }
+        .theme-switch {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--card-bg);
+            padding: 0.5rem 1rem;
+            border-radius: 60px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-light);
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        .theme-switch i {
+            font-size: 1.2rem;
+        }
+
+        /* grid de tarjetas */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.8rem;
+            margin-bottom: 3rem;
+        }
+        .card {
+            background: var(--card-bg);
+            border-radius: 1.75rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-light);
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .card:hover {
+            transform: translateY(-6px);
+            box-shadow: var(--shadow-hover);
+        }
+        .card-header {
+            padding: 1.5rem 1.5rem 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 2px solid var(--border-light);
+        }
+        .card-icon {
+            font-size: 2.4rem;
+        }
+        .card-header h2 {
+            font-size: 1.7rem;
+            font-weight: 700;
+        }
+        .card-body {
+            padding: 1.25rem 1.5rem 1.5rem;
+        }
+        .badge-era {
+            display: inline-block;
+            background: var(--badge-bg);
+            padding: 0.2rem 0.7rem;
+            border-radius: 40px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            border: 1px solid var(--border-light);
+        }
+        .feature-list {
+            list-style: none;
+            margin: 1rem 0;
+        }
+        .feature-list li {
+            margin-bottom: 0.7rem;
+            display: flex;
+            gap: 10px;
+            align-items: baseline;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+        .feature-list li i {
+            width: 20px;
+            color: var(--accent-blue);
+            font-size: 0.85rem;
+            margin-top: 0.15rem;
+        }
+        .limit-note {
+            background: var(--code-bg);
+            padding: 0.75rem;
+            border-radius: 1rem;
+            margin-top: 1.2rem;
+            font-size: 0.85rem;
+            border-left: 4px solid var(--accent-orange);
+        }
+        .btn-demo {
+            margin-top: 1rem;
+            background: transparent;
+            border: 1px solid var(--border-light);
+            padding: 0.4rem 1rem;
+            border-radius: 40px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.1s;
+            color: var(--text-primary);
+        }
+        .btn-demo:hover {
+            background: var(--accent-blue);
+            color: white;
+            border-color: var(--accent-blue);
+        }
+
+        /* sección línea de tiempo (evolución) */
+        .timeline-section {
+            background: var(--card-bg);
+            border-radius: 2rem;
+            padding: 1.8rem;
+            margin: 2rem 0 2rem;
+            border: 1px solid var(--border-light);
+            box-shadow: var(--shadow-sm);
+        }
+        .timeline-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 2rem;
+        }
+        .timeline-steps {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            position: relative;
+        }
+        .step {
+            flex: 1;
+            min-width: 180px;
+            text-align: center;
+            padding: 0 0.5rem;
+            position: relative;
+            z-index: 2;
+        }
+        .step-circle {
+            width: 48px;
+            height: 48px;
+            background: var(--accent-blue);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            color: white;
+            font-weight: bold;
+            font-size: 1.4rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .step h4 {
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        .step p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        /* tabla comparativa */
+        .comparison-table {
+            background: var(--card-bg);
+            border-radius: 1.75rem;
+            padding: 1.5rem;
+            border: 1px solid var(--border-light);
+            margin-top: 1.5rem;
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+        th, td {
+            text-align: left;
+            padding: 1rem 0.75rem;
+            border-bottom: 1px solid var(--border-light);
+        }
+        th {
+            font-weight: 600;
+            color: var(--accent-purple);
+        }
+        .agent-highlight {
+            background: rgba(139, 92, 246, 0.1);
+            border-radius: 12px;
+        }
+
+        footer {
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 3rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-light);
+        }
+
+        @media (max-width: 720px) {
+            body { padding: 1rem; }
+            .card-header h2 { font-size: 1.4rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <div class="title-section">
+            <h1><i class="fas fa-robot" style="background: none; -webkit-background-clip: unset; color: var(--accent-blue);"></i> IA Agentica · Infografía Evolutiva</h1>
+            <p>De la lógica rígida a la creatividad generativa, hasta la acción autónoma</p>
+        </div>
+        <div class="theme-switch" id="themeToggle">
+            <i class="fas fa-sun" id="sunIcon"></i>
+            <span id="themeText">Modo oscuro</span>
+            <i class="fas fa-moon" id="moonIcon" style="display: none;"></i>
+        </div>
+    </div>
+
+    <!-- Tarjetas de los 3 paradigmas -->
+    <div class="cards-grid">
+        <!-- IA CLÁSICA -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon"><i class="fas fa-microchip" style="color: var(--accent-blue);"></i></div>
+                <h2 style="color: var(--accent-blue);">IA Clásica</h2>
+            </div>
+            <div class="card-body">
+                <div class="badge-era">⏳ 1950s - 1980s · Sistemas Expertos</div>
+                <p style="font-weight: 500; margin-bottom: 0.75rem;">Reglas & Lógica determinista</p>
+                <ul class="feature-list">
+                    <li><i class="fas fa-check-circle"></i> <strong>Racionalidad estructurada</strong> – Reglas SI/ENTONCES</li>
+                    <li><i class="fas fa-check-circle"></i> <strong>Predecible</strong> – Misma entrada → misma salida</li>
+                    <li><i class="fas fa-check-circle"></i> <strong>Sistemas expertos</strong> (MYCIN, diagnóstico)</li>
+                </ul>
+                <div class="limit-note">
+                    <i class="fas fa-exclamation-triangle"></i> <strong>Limitación:</strong> Frágil, no maneja ambigüedad, requiere reprogramación explícita.
+                </div>
+                <button class="btn-demo" onclick="alert('🤖 IA Clásica ejemplo: Chatbot telefónico por menú de opciones. No aprende por sí mismo.')"><i class="fas fa-terminal"></i> Ver ejemplo</button>
+            </div>
+        </div>
+
+        <!-- IA GENERATIVA -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon"><i class="fas fa-palette" style="color: var(--accent-cyan);"></i></div>
+                <h2 style="color: var(--accent-cyan);">IA Generativa</h2>
+            </div>
+            <div class="card-body">
+                <div class="badge-era">✨ 2010s - Actualidad · LLMs, Difusión</div>
+                <p style="font-weight: 500; margin-bottom: 0.75rem;">Creatividad basada en patrones masivos</p>
+                <ul class="feature-list">
+                    <li><i class="fas fa-check-circle"></i> <strong>Lenguaje natural fluido</strong> – Conversación, resúmenes</li>
+                    <li><i class="fas fa-check-circle"></i> <strong>Generación novedosa</strong> – texto, imagen, código</li>
+                    <li><i class="fas fa-check-circle"></i> <strong>Generalización</strong> – combina conceptos nunca vistos</li>
+                </ul>
+                <div class="limit-note">
+                    <i class="fas fa-exclamation-triangle"></i> <strong>Limitación:</strong> Cerebro sin manos, reactiva, sin memoria persistente, no ejecuta acciones.
+                </div>
+                <button class="btn-demo" onclick="alert('📝 IA Generativa: ChatGPT escribe un ensayo pero no puede reservar una mesa.')"><i class="fas fa-comment-dots"></i> Ver ejemplo</button>
+            </div>
+        </div>
+
+        <!-- IA AGENTICA -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon"><i class="fas fa-brain" style="color: var(--accent-purple);"></i></div>
+                <h2 style="color: var(--accent-purple);">IA Agentica</h2>
+            </div>
+            <div class="card-body">
+                <div class="badge-era">🚀 2023 - presente · Agentes autónomos</div>
+                <p style="font-weight: 500; margin-bottom: 0.75rem;">Objetivos + planificación + herramientas</p>
+                <ul class="feature-list">
+                    <li><i class="fas fa-check-circle"></i> <strong>Planificación dinámica</strong> – Descompone metas complejas</li>
+                    <li><i class="fas fa-check-circle"></i> <strong>Memoria Largo Plazo</strong> – Aprende de interacciones</li>
+                    <li><i class="fas fa-check-circle"></i> <strong>Uso de herramientas</strong> – APIs, código, web, acciones reales</li>
+                    <li><i class="fas fa-check-circle"></i> <strong>Bucle percepción-acción</strong> – Ajusta planes en tiempo real</li>
+                </ul>
+                <div class="limit-note" style="border-left-color: var(--accent-green);">
+                    <i class="fas fa-lightbulb"></i> <strong>Aportación única:</strong> Síntesis de lógica, generación y autonomía.
+                </div>
+                <button class="btn-demo" onclick="alert('🤖 Agente IA: “Organiza cena con presupuesto” → busca restaurantes, verifica calendario, envía invitación. ¡Acción real!')"><i class="fas fa-cogs"></i> Ver agente en acción</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Evolución visual: linea del tiempo interactiva -->
+    <div class="timeline-section">
+        <div class="timeline-title">
+            <i class="fas fa-chart-line" style="font-size: 1.8rem; color: var(--accent-orange);"></i>
+            <h3>Evolución: de la regla a la autonomía</h3>
+        </div>
+        <div class="timeline-steps">
+            <div class="step">
+                <div class="step-circle" style="background: var(--accent-blue);">1</div>
+                <h4>IA Clásica</h4>
+                <p>Lógica simbólica, reglas if-then. <strong>Aportó:</strong> estructura y razonamiento formal.</p>
+            </div>
+            <div class="step">
+                <div class="step-circle" style="background: var(--accent-cyan);">2</div>
+                <h4>IA Generativa</h4>
+                <p>Modelos estadísticos masivos. <strong>Aportó:</strong> lenguaje natural, creatividad y fluidez.</p>
+            </div>
+            <div class="step">
+                <div class="step-circle" style="background: var(--accent-purple);">3</div>
+                <h4>IA Agentica</h4>
+                <p>Cerebro (LLM) + Planificador + Herramientas + Memoria. <strong>Aportó:</strong> acción autónoma orientada a objetivos.</p>
+            </div>
+        </div>
+        <div style="margin-top: 1.5rem; text-align: center; font-size: 0.85rem; padding: 0.5rem; background: var(--code-bg); border-radius: 2rem;">
+            <i class="fas fa-sync-alt"></i> La IA Agentica integra lo mejor de la lógica clásica (reglas de seguridad) y la generación moderna, añadiendo planificación y uso de herramientas.
+        </div>
+    </div>
+
+    <!-- Tabla comparativa clave -->
+    <div class="comparison-table">
+        <h4 style="margin-bottom: 1rem; display: flex; gap: 8px;"><i class="fas fa-table-list"></i> Comparativa de capacidades</h4>
+        <table>
+            <thead>
+                <tr><th>Característica</th><th>IA Clásica</th><th>IA Generativa</th><th class="agent-highlight">IA Agentica</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><strong>Núcleo</strong></td><td>Reglas & lógica</td><td>Modelo estadístico (LLM)</td><td class="agent-highlight">LLM + Planificador + Herramientas</td></tr>
+                <tr><td><strong>Tipo de tarea</strong></td><td>Cerrada / bien definida</td><td>Generar contenido</td><td class="agent-highlight">Lograr objetivos complejos</td></tr>
+                <tr><td><strong>Memoria</strong></td><td>No</td><td>Contexto limitado</td><td class="agent-highlight">Largo plazo + vectorial</td></tr>
+                <tr><td><strong>Planificación</strong></td><td>Explícita/programada</td><td>Nula (reactiva)</td><td class="agent-highlight">Autónoma y dinámica</td></tr>
+                <tr><td><strong>Interacción entorno</strong></td><td>Nula o rígida</td><td>Solo texto</td><td class="agent-highlight">Activa (APIs, código, web)</td></tr>
+                <tr><td><strong>Flexibilidad</strong></td><td>Muy baja</td><td>Alta en lenguaje</td><td class="agent-highlight">Alta en acción y estrategia</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Sección extra: ejemplo de bucle agente (mostrar interactividad) -->
+    <div style="background: var(--card-bg); border-radius: 1.75rem; padding: 1.5rem; margin-top: 2rem; border:1px solid var(--border-light);">
+        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+            <i class="fas fa-arrows-spin" style="font-size: 2rem; color: var(--accent-green);"></i>
+            <h3>Bucle Agente: Percepción → Razonamiento → Plan → Acción → Memoria</h3>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1rem; justify-content: space-between;">
+            <div style="flex:1; background: var(--code-bg); border-radius: 1rem; padding: 1rem;">
+                <i class="fas fa-eye"></i> <strong>1. Percibir</strong><br>
+                <span style="font-size:0.85rem;">Escucha: "Quiero volar a Madrid el viernes, presupuesto 150€"</span>
+            </div>
+            <div style="flex:1; background: var(--code-bg); border-radius: 1rem; padding: 1rem;">
+                <i class="fas fa-brain"></i> <strong>2. Razonar</strong><br>
+                <span style="font-size:0.85rem;">Descompone objetivo, verifica restricciones</span>
+            </div>
+            <div style="flex:1; background: var(--code-bg); border-radius: 1rem; padding: 1rem;">
+                <i class="fas fa-list-check"></i> <strong>3. Planificar</strong><br>
+                <span style="font-size:0.85rem;">Buscar vuelos → comparar precios → reservar</span>
+            </div>
+            <div style="flex:1; background: var(--code-bg); border-radius: 1rem; padding: 1rem;">
+                <i class="fas fa-hand-peace"></i> <strong>4. Actuar</strong><br>
+                <span style="font-size:0.85rem;">Llama API de vuelos, ejecuta reserva</span>
+            </div>
+            <div style="flex:1; background: var(--code-bg); border-radius: 1rem; padding: 1rem;">
+                <i class="fas fa-database"></i> <strong>5. Memoria</strong><br>
+                <span style="font-size:0.85rem;">Guarda resultado y aprende para futuros viajes</span>
+            </div>
+        </div>
+        <p style="margin-top: 1rem; font-size:0.85rem; color: var(--text-secondary);"><i class="fas fa-microchip"></i> A diferencia de la IA Generativa (solo texto), la IA Agentica <strong>ejecuta</strong> y itera hasta cumplir la meta.</p>
+    </div>
+    <footer>
+        <i class="fas fa-chalkboard-user"></i> Infografía conceptual · Evolución: IA Clásica → IA Generativa → IA Agentica · Modo claro/oscuro interactivo
+    </footer>
+</div>
+
+<script>
+    // MODO CLARO / OSCURO con persistencia local + cambio iconos
+    const themeToggle = document.getElementById('themeToggle');
+    const body = document.body;
+    const sunIcon = document.getElementById('sunIcon');
+    const moonIcon = document.getElementById('moonIcon');
+    const themeText = document.getElementById('themeText');
+
+    function setTheme(theme) {
+        if (theme === 'dark') {
+            body.classList.add('dark');
+            localStorage.setItem('theme', 'dark');
+            if (sunIcon) sunIcon.style.display = 'none';
+            if (moonIcon) moonIcon.style.display = 'inline-block';
+            if (themeText) themeText.innerText = 'Modo claro';
+        } else {
+            body.classList.remove('dark');
+            localStorage.setItem('theme', 'light');
+            if (sunIcon) sunIcon.style.display = 'inline-block';
+            if (moonIcon) moonIcon.style.display = 'none';
+            if (themeText) themeText.innerText = 'Modo oscuro';
+        }
+    }
+
+    // Cargar tema guardado o preferencia del sistema
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+        setTheme(savedTheme);
+    } else {
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        setTheme(prefersDark ? 'dark' : 'light');
+    }
+
+    themeToggle.addEventListener('click', () => {
+        const isDark = body.classList.contains('dark');
+        setTheme(isDark ? 'light' : 'dark');
+    });
+
+    // pequeña mejora: tooltips nativos o efectos, pero se mantiene simple.
+    // Además, garantizar que los estilos de hover se mantengan
+    
+    // Agregar pequeña simulación de info extra para destacar las contribuciones
+    const cards = document.querySelectorAll('.card');
+    cards.forEach(card => {
+        card.addEventListener('mouseenter', () => {
+            // solo para feedback sutil visual
+            card.style.cursor = 'pointer';
+        });
+    });
+
+    // Mostrar alertas personalizadas de demostración ya integradas en botones
+    console.log('Infografía IA Agentica lista - modo oscuro/claro dinámico');
+</script>
+
+<!-- Nota: El contenido combina IA Clásica, Generativa y Agéntica -->
+</body>
+</html>

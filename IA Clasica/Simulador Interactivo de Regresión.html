@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador Didáctico de Regresión - IA Universitaria</title>
+    <!-- Tailwind CSS para el diseño premium -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Plotly.js para gráficos científicos 2D y 3D interactivos -->
+    <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+    <!-- Lucide Icons para iconos modernos -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- KaTeX para renderizar matemáticas bellamente -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+    <style>
+        .active-tab {
+            border-bottom: 4px solid #6366f1;
+            color: #6366f1;
+            font-weight: 700;
+        }
+        .math-block {
+            background-color: #f8fafc;
+            border-left: 4px solid #6366f1;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0 0.5rem 0.5rem 0;
+            font-family: 'Cambria', 'Georgia', serif;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <!-- Encabezado Universitario -->
+    <header class="bg-gradient-to-r from-slate-900 to-indigo-950 text-white shadow-xl py-6 px-8">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-indigo-600 rounded-xl text-white shadow-lg shadow-indigo-500/30">
+                    <i data-lucide="graduation-cap" class="w-8 h-8"></i>
+                </div>
+                <div>
+                    <span class="text-xs font-semibold tracking-wider uppercase text-indigo-300">Laboratorio de Aprendizaje Supervisado</span>
+                    <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight">Simulador Interactivo de Regresión</h1>
+                </div>
+            </div>
+            <div class="flex flex-col items-end text-right">
+                <p class="text-sm font-medium text-slate-300">Curso: Aprendizaje Automático & IA</p>
+                <span class="text-xs bg-emerald-500/20 text-emerald-300 px-3 py-1 rounded-full border border-emerald-500/30 font-semibold mt-1 flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span> Modo: Profesor Virtual Activo
+                </span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navegación de Pestañas / Temas -->
+    <nav class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 flex overflow-x-auto whitespace-nowrap">
+            <button onclick="switchTab('simple')" id="tab-simple" class="px-6 py-4 text-sm font-semibold text-slate-600 hover:text-indigo-600 transition flex items-center gap-2 active-tab">
+                <i data-lucide="trending-up" class="w-4 h-4"></i> Regresión Lineal Simple
+            </button>
+            <button onclick="switchTab('polynomial')" id="tab-polynomial" class="px-6 py-4 text-sm font-semibold text-slate-600 hover:text-indigo-600 transition flex items-center gap-2">
+                <i data-lucide="activity" class="w-4 h-4"></i> Regresión Polinomial
+            </button>
+            <button onclick="switchTab('multiple')" id="tab-multiple" class="px-6 py-4 text-sm font-semibold text-slate-600 hover:text-indigo-600 transition flex items-center gap-2">
+                <i data-lucide="layers" class="w-4 h-4"></i> Regresión Múltiple (3D)
+            </button>
+            <button onclick="switchTab('theory')" id="tab-theory" class="px-6 py-4 text-sm font-semibold text-slate-600 hover:text-indigo-600 transition flex items-center gap-2">
+                <i data-lucide="book-open" class="w-4 h-4"></i> Conceptos y Ecuaciones
+            </button>
+        </div>
+    </nav>
+
+    <!-- Contenedor Principal -->
+    <main class="flex-grow max-w-7xl w-full mx-auto p-4 md:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <!-- COLUMNA DE CONTROLES (IZQUIERDA) - Ocupa 4 columnas -->
+        <div class="lg:col-span-4 flex flex-col gap-6" id="left-panel">
+            
+            <!-- PANEL GENERAL DE DATOS (No aplica para pestaña teoría) -->
+            <div id="data-control-card" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col gap-4">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <h2 class="font-bold text-lg text-slate-900 flex items-center gap-2">
+                        <i data-lucide="database" class="text-indigo-600 w-5 h-5"></i> Configurar Dataset
+                    </h2>
+                    <span class="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded-md font-semibold" id="data-count-badge">0 puntos</span>
+                </div>
+
+                <!-- Selección de dataset predefinido o generador de ruido -->
+                <div class="flex flex-col gap-3">
+                    <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Generador de Datos Sintéticos</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="generateSyntheticData('clean')" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition">
+                            Ideal (Bajo Ruido)
+                        </button>
+                        <button onclick="generateSyntheticData('noisy')" class="px-3 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-semibold rounded-lg transition">
+                            Realista (Con Ruido)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Parámetros específicos del dataset lineal / polinomial -->
+                <div id="synthetic-sliders" class="flex flex-col gap-3 pt-2">
+                    <div>
+                        <div class="flex justify-between text-xs font-semibold text-slate-600 mb-1">
+                            <span>Cantidad de puntos:</span>
+                            <span id="point-count-val">40</span>
+                        </div>
+                        <input type="range" id="param-points" min="10" max="150" value="40" class="w-full accent-indigo-600" oninput="updateSlidersAndRegenerate()">
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-xs font-semibold text-slate-600 mb-1">
+                            <span>Nivel de Ruido ($\sigma$):</span>
+                            <span id="noise-val">15</span>
+                        </div>
+                        <input type="range" id="param-noise" min="0" max="60" value="15" class="w-full accent-indigo-600" oninput="updateSlidersAndRegenerate()">
+                    </div>
+                </div>
+
+                <!-- Tabla Interactiva / Agregar puntos manualmente -->
+                <div id="manual-input-box" class="border-t border-slate-100 pt-4 flex flex-col gap-2">
+                    <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Agregar Punto Manual</label>
+                    <div class="flex gap-2">
+                        <input type="number" id="add-x" placeholder="X" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-indigo-500">
+                        <input type="number" id="add-y" placeholder="Y" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-indigo-500">
+                        <button onclick="addUserPoint()" class="p-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition shadow-sm flex items-center justify-center">
+                            <i data-lucide="plus" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                    <p class="text-[10px] text-slate-400 italic">💡 Consejo: ¡También puedes hacer clic directamente en el gráfico para posicionar nuevos puntos de datos!</p>
+                </div>
+
+                <button onclick="clearAllData()" class="w-full py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 font-semibold text-xs rounded-lg transition border border-rose-200/50 flex items-center justify-center gap-1">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i> Limpiar Todo el Dataset
+                </button>
+            </div>
+
+            <!-- PANEL DE HIPERPARÁMETROS DEL MODELO -->
+            <div id="hyperparameter-card" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col gap-4">
+                <h2 class="font-bold text-lg text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
+                    <i data-lucide="sliders" class="text-indigo-600 w-5 h-5"></i> Hiperparámetros
+                </h2>
+
+                <!-- Controles para Simple (MCO vs Descenso de Gradiente) -->
+                <div id="controls-simple" class="flex flex-col gap-4">
+                    <div>
+                        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">Método de Ajuste</label>
+                        <select id="simple-method" class="w-full p-2.5 border border-slate-200 rounded-lg text-sm bg-slate-50 font-medium" onchange="toggleSimpleMethod()">
+                            <option value="ols">Mínimos Cuadrados (Analítico Exacto)</option>
+                            <option value="gd">Descenso de Gradiente (Iterativo)</option>
+                        </select>
+                    </div>
+
+                    <!-- Controles específicos de Descenso de Gradiente -->
+                    <div id="gd-controls" class="hidden flex flex-col gap-3 bg-indigo-50/50 p-3 rounded-xl border border-indigo-100">
+                        <div>
+                            <div class="flex justify-between text-xs font-semibold text-slate-600 mb-1">
+                                <span>Tasa de Aprendizaje ($\alpha$):</span>
+                                <span id="lr-val">0.01</span>
+                            </div>
+                            <input type="range" id="param-lr" min="0.001" max="0.1" step="0.001" value="0.01" class="w-full accent-indigo-600" oninput="updateGDParams()">
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-xs font-semibold text-slate-600 mb-1">
+                                <span>Iteraciones (Epochs):</span>
+                                <span id="epochs-val">100</span>
+                            </div>
+                            <input type="range" id="param-epochs" min="10" max="1000" step="10" value="100" class="w-full accent-indigo-600" oninput="updateGDParams()">
+                        </div>
+                        <div class="flex gap-2 mt-2">
+                            <button id="btn-gd-step" onclick="stepGradientDescent()" class="flex-1 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg transition flex items-center justify-center gap-1">
+                                <i data-lucide="play" class="w-3.5 h-3.5"></i> Paso a Paso
+                            </button>
+                            <button id="btn-gd-auto" onclick="toggleAutoGD()" class="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg transition flex items-center justify-center gap-1">
+                                <i data-lucide="refresh-cw" class="w-3.5 h-3.5" id="auto-gd-icon"></i> <span id="auto-gd-text">Auto</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Controles para Polinomial -->
+                <div id="controls-polynomial" class="hidden flex flex-col gap-4">
+                    <div>
+                        <div class="flex justify-between text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                            <span>Grado del Polinomio ($d$):</span>
+                            <span id="poly-degree-val" class="text-indigo-600 text-sm">3</span>
+                        </div>
+                        <input type="range" id="param-poly-degree" min="1" max="6" value="3" class="w-full accent-indigo-600" oninput="changePolyDegree()">
+                    </div>
+                    <div class="text-[11px] text-slate-500 bg-amber-50 border border-amber-200 p-3 rounded-lg leading-relaxed flex gap-2">
+                        <i data-lucide="alert-triangle" class="text-amber-600 w-5 h-5 shrink-0"></i>
+                        <span><strong>Nota Académica:</strong> Un grado muy alto ($d \ge 5$) puede ajustarse perfectamente a los puntos de entrenamiento pero generar <strong>sobreajuste (overfitting)</strong>. Observa cómo cambia la curva en los extremos.</span>
+                    </div>
+                </div>
+
+                <!-- Controles para Múltiple (3D) -->
+                <div id="controls-multiple" class="hidden flex flex-col gap-4">
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        En regresión múltiple estudiamos la respuesta de $y$ frente a dos variables independientes $x_1$ (ej. Horas de estudio) y $x_2$ (ej. Asistencia a clases). El ajuste óptimo se representa como un <strong>Plano Bidimensional</strong> en un espacio 3D.
+                    </p>
+                    <button onclick="generateSynthetic3D()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-lg transition flex items-center justify-center gap-1.5 shadow-md shadow-indigo-600/20">
+                        <i data-lucide="refresh-cw" class="w-4 h-4"></i> Regenerar Datos 3D
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- COLUMNA DE VISUALIZACIÓN Y MÉTRICAS (DERECHA) - Ocupa 8 columnas -->
+        <div class="lg:col-span-8 flex flex-col gap-6">
+            
+            <!-- PANEL DEL GRÁFICO (PLOTLY) -->
+            <div id="visualization-card" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 md:p-6 flex flex-col gap-4">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <h2 class="font-bold text-lg text-slate-900 flex items-center gap-2">
+                        <i data-lucide="line-chart" class="text-indigo-600 w-5 h-5"></i> Espacio de Ajuste e Hipótesis
+                    </h2>
+                    <div id="gd-epoch-indicator" class="hidden text-xs bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full font-bold">
+                        Época: <span id="gd-epoch-num">0</span>
+                    </div>
+                </div>
+                <!-- El contenedor del gráfico Plotly -->
+                <div id="chart-container" class="w-full h-[32rem] bg-slate-50 rounded-xl overflow-hidden border border-slate-100"></div>
+            </div>
+
+            <!-- DASHBOARD DE MÉTRICAS -->
+            <div id="metrics-card" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- Tarjeta de Ecuación -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Ecuación Estimada</span>
+                        <div id="metric-equation" class="text-sm font-semibold text-indigo-950 break-words font-mono mt-2 overflow-x-auto">
+                            Calculando...
+                        </div>
+                    </div>
+                    <div class="text-[10px] text-slate-400 mt-2">Modelo Matemático del Ajuste</div>
+                </div>
+
+                <!-- Tarjeta de R^2 -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Coeficiente R²</span>
+                        <div class="flex items-baseline gap-2 mt-2">
+                            <span id="metric-r2" class="text-3xl font-extrabold text-slate-900">0.000</span>
+                            <span id="metric-r2-pct" class="text-xs font-bold text-slate-500">(0.0%)</span>
+                        </div>
+                    </div>
+                    <div class="text-[10px] text-slate-400 mt-2">Proporción de varianza explicada</div>
+                </div>
+
+                <!-- Tarjeta de MSE -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Error Cuadrático Medio (MSE)</span>
+                        <div id="metric-mse" class="text-3xl font-extrabold text-slate-900 mt-2">
+                            0.000
+                        </div>
+                    </div>
+                    <div class="text-[10px] text-slate-400 mt-2">Promedio de errores al cuidado</div>
+                </div>
+            </div>
+
+            <!-- EXPLICACIÓN INTERACTIVA SEGÚN MODELO SELECCIONADO -->
+            <div id="dynamic-explainer" class="bg-indigo-900 text-white rounded-2xl p-6 shadow-xl relative overflow-hidden">
+                <div class="absolute right-0 bottom-0 opacity-10 translate-x-6 translate-y-6">
+                    <i data-lucide="book-open" class="w-48 h-48"></i>
+                </div>
+                <div class="relative z-10 flex flex-col gap-3">
+                    <span class="text-xs font-bold text-indigo-200 uppercase tracking-wider">Pizarra de Clase</span>
+                    <h3 id="explainer-title" class="text-xl font-bold">Interpretación del Modelo</h3>
+                    <p id="explainer-text" class="text-sm text-indigo-100 leading-relaxed">
+                        Cargando explicación...
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- CONTENIDO DETALLADO DE TEORÍA (POR DEFECTO OCULTO, SE MUESTRA SOLO EN SU PESTAÑA) -->
+        <div id="theory-tab-content" class="hidden lg:col-span-12 bg-white rounded-2xl shadow-sm border border-slate-200 p-8 flex flex-col gap-6">
+            <h2 class="text-2xl font-extrabold text-slate-900 border-b border-slate-100 pb-4 flex items-center gap-2">
+                <i data-lucide="book-open" class="text-indigo-600 w-7 h-7"></i> Manual de Teoría y Fundamentos de Regresión
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Columna Teórica Izquierda -->
+                <div class="flex flex-col gap-6">
+                    <section class="flex flex-col gap-2">
+                        <h3 class="text-lg font-bold text-slate-800">1. Regresión Lineal Simple</h3>
+                        <p class="text-sm text-slate-600 leading-relaxed">
+                            Trata de modelar la relación entre una única variable explicativa $X$ y una variable de respuesta continua $Y$ mediante una línea recta.
+                        </p>
+                        <div class="math-block">
+                            Ecuación del modelo:<br>
+                            $$Y = \beta_0 + \beta_1 X + \epsilon$$
+                            Donde $\beta_0$ es el intercepto (el valor de $Y$ cuando $X=0$), $\beta_1$ es la pendiente (el cambio en $Y$ por unidad de cambio en $X$), y $\epsilon$ es el término de error aleatorio.
+                        </div>
+                        <p class="text-sm text-slate-600 leading-relaxed">
+                            Para encontrar los coeficientes óptimos mediante <strong>Mínimos Cuadrados Ordinarios (OLS)</strong>, minimizamos la suma de los residuos al cuadrado. Las fórmulas analíticas cerradas son:
+                        </p>
+                        <div class="math-block">
+                            $$\beta_1 = \frac{\sum_{i=1}^{n} (X_i - \bar{X})(Y_i - \bar{Y})}{\sum_{i=1}^{n} (X_i - \bar{X})^2}$$
+                            $$\beta_0 = \bar{Y} - \beta_1 \bar{X}$$
+                        </div>
+                    </section>
+
+                    <section class="flex flex-col gap-2">
+                        <h3 class="text-lg font-bold text-slate-800">2. Algoritmo de Descenso de Gradiente</h3>
+                        <p class="text-sm text-slate-600 leading-relaxed">
+                            Cuando los datasets son masivos, calcular los mínimos cuadrados directamente puede ser computacionalmente prohibitivo. En su lugar, usamos un optimizador iterativo como el <strong>Descenso de Gradiente</strong>.
+                        </p>
+                        <p class="text-sm text-slate-600 leading-relaxed">
+                            Definimos la función de costo (Error Cuadrático Medio, MSE):
+                        </p>
+                        <div class="math-block">
+                            $$J(\beta_0, \beta_1) = \frac{1}{2n} \sum_{i=1}^{n} (\hat{Y}_i - Y_i)^2$$
+                        </div>
+                        <p class="text-sm text-slate-600 leading-relaxed">
+                            Y actualizamos repetidamente los coeficientes moviéndonos en la dirección opuesta al vector gradiente:
+                        </p>
+                        <div class="math-block">
+                            $$\beta_j \leftarrow \beta_j - \alpha \frac{\partial J}{\partial \beta_j}$$
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Columna Teórica Derecha -->
+                <div class="flex flex-col gap-6">
+                    <section class="flex flex-col gap-2">
+                        <h3 class="text-lg font-bold text-slate-800">3. Regresión Polinomial</h3>
+                        <p class="text-sm text-slate-600 leading-relaxed">
+                            ¿Qué ocurre cuando la relación de los datos es claramente no lineal? Podemos extender el modelo lineal proyectando la variable única $X$ a un espacio multidimensional de características polinomiales.
+                        </p>
+                        <div class="math-block">
+                            Ecuación de grado $d$:<br>
+                            $$Y = \beta_0 + \beta_1 X + \beta_2 X^2 + \dots + \beta_d X^d + \epsilon$$
+                        </div>
+                        <p class="text-sm text-slate-600 leading-relaxed">
+                            A pesar del nombre, este modelo sigue siendo <strong>lineal en sus parámetros</strong> ($\beta_i$). Por tanto, podemos seguir utilizando álgebra matricial exacta para resolverlo de la forma:
+                        </p>
+                        <div class="math-block">
+                            $$\vec{\beta} = (X^T X)^{-1} X^T \vec{Y}$$
+                        </div>
+                        <p class="text-xs text-amber-700 font-semibold bg-amber-50 border border-amber-200 p-2.5 rounded-lg">
+                            ⚠️ Cuidado con el sesgo y la varianza. Un grado polinomial muy alto captura el ruido de los puntos induciendo alta varianza (sobreajuste), destruyendo la capacidad de generalización en datos futuros.
+                        </p>
+                    </section>
+
+                    <section class="flex flex-col gap-2">
+                        <h3 class="text-lg font-bold text-slate-800">4. Regresión Lineal Múltiple</h3>
+                        <p class="text-sm text-slate-600 leading-relaxed">
+                            En el mundo real, los fenómenos dependen de múltiples factores. La regresión múltiple generaliza la regresión simple para $k$ variables predictoras de la forma:
+                        </p>
+                        <div class="math-block">
+                            $$Y = \beta_0 + \beta_1 X_1 + \beta_2 X_2 + \dots + \beta_k X_k + \epsilon$$
+                        </div>
+                        <p class="text-sm text-slate-600 leading-relaxed">
+                            Gráficamente, la regresión lineal simple busca una línea en 2D, la múltiple con dos variables busca un <strong>plano en 3D</strong>, y para dimensiones superiores busca un <strong>hiperplano</strong> multidimensional.
+                        </p>
+                    </section>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Pie de página de la cátedra -->
+    <footer class="bg-slate-900 text-slate-400 py-6 border-t border-slate-800 text-center text-xs mt-12">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <p>© 2026 Laboratorio Virtual de Inteligencia Artificial. Diseñado con fines didácticos universitarios.</p>
+            <p class="flex items-center gap-1"><i data-lucide="code" class="w-4 h-4 text-indigo-500"></i> Desarrollado bajo arquitectura limpia y matemática exacta.</p>
+        </div>
+    </footer>
+
+    <!-- LOGICA JAVASCRIPT DEL SIMULADOR -->
+    <script>
+        // Inicializar iconos de Lucide
+        lucide.createIcons();
+
+        // VARIABLES GLOBALES DE ESTADO
+        let currentTab = 'simple'; // 'simple', 'polynomial', 'multiple', 'theory'
+        let currentData = { x: [], y: [] }; // Datos 2D activos
+        let currentData3D = { x1: [], x2: [], y: [] }; // Datos 3D activos
+        
+        // Estado específico para Descenso de Gradiente
+        let gdState = {
+            w: 0,
+            b: 0,
+            lr: 0.01,
+            epochs: 100,
+            currentEpoch: 0,
+            lossHistory: [],
+            intervalId: null,
+            isRunning: false
+        };
+
+        // AL CARGAR LA PÁGINA
+        window.onload = function() {
+            // Generar datos lineales iniciales
+            generateSyntheticData('noisy');
+            // Inicializar renderizador de KaTeX de forma segura con el DOM completamente listo
+            if (typeof renderMathInElement === 'function') {
+                renderMathInElement(document.body);
+            }
+            // Escuchar clics en el gráfico para añadir puntos
+            setupChartClicks();
+        };
+
+        // SISTEMA DE PESTAÑAS (NAVEGACIÓN)
+        function switchTab(tabId) {
+            currentTab = tabId;
+            
+            // Detener cualquier animación de descenso de gradiente que esté corriendo
+            stopAutoGD();
+
+            // Clases visuales de pestañas
+            document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('active-tab'));
+            document.getElementById(`tab-${tabId}`).classList.add('active-tab');
+
+            // Mostrar/Ocultar paneles
+            const leftPanel = document.getElementById('left-panel');
+            const dataCard = document.getElementById('data-control-card');
+            const hyperCard = document.getElementById('hyperparameter-card');
+            const visualCard = document.getElementById('visualization-card');
+            const metricsCard = document.getElementById('metrics-card');
+            const dynamicExplainer = document.getElementById('dynamic-explainer');
+            const theoryContent = document.getElementById('theory-tab-content');
+
+            // Reiniciar visibilidad de controles específicos
+            document.getElementById('controls-simple').classList.add('hidden');
+            document.getElementById('controls-polynomial').classList.add('hidden');
+            document.getElementById('controls-multiple').classList.add('hidden');
+
+            if (tabId === 'theory') {
+                leftPanel.classList.add('hidden');
+                visualCard.classList.add('hidden');
+                metricsCard.classList.add('hidden');
+                dynamicExplainer.classList.add('hidden');
+                theoryContent.classList.remove('hidden');
+            } else {
+                leftPanel.classList.remove('hidden');
+                visualCard.classList.remove('hidden');
+                metricsCard.classList.remove('hidden');
+                dynamicExplainer.classList.remove('hidden');
+                theoryContent.classList.add('hidden');
+
+                if (tabId === 'simple') {
+                    document.getElementById('controls-simple').classList.remove('hidden');
+                    document.getElementById('synthetic-sliders').classList.remove('hidden');
+                    document.getElementById('manual-input-box').classList.remove('hidden');
+                    toggleSimpleMethod(); // Asegurar si es OLS o GD
+                } else if (tabId === 'polynomial') {
+                    document.getElementById('controls-polynomial').classList.remove('hidden');
+                    document.getElementById('synthetic-sliders').classList.remove('hidden');
+                    document.getElementById('manual-input-box').classList.remove('hidden');
+                } else if (tabId === 'multiple') {
+                    document.getElementById('controls-multiple').classList.remove('hidden');
+                    document.getElementById('synthetic-sliders').classList.add('hidden');
+                    document.getElementById('manual-input-box').classList.add('hidden');
+                    if (currentData3D.x1.length === 0) {
+                        generateSynthetic3D();
+                    }
+                }
+                
+                // Forzar regeneración o reajuste según el tab seleccionado
+                runRegression();
+            }
+        }
+
+        // CONTROLADORES DE ENTRADA Y GENERACIÓN DE DATOS
+        function generateSyntheticData(type) {
+            const count = parseInt(document.getElementById('param-points').value);
+            const noiseLevel = parseFloat(document.getElementById('param-noise').value);
+            
+            let x = [];
+            let y = [];
+
+            if (currentTab === 'simple' || currentTab === 'theory') {
+                // Generar linealmente: y = 2.5 * x + 15 + ruido
+                for (let i = 0; i < count; i++) {
+                    let xv = Math.random() * 100;
+                    let noise = (Math.random() - 0.5) * noiseLevel * (type === 'clean' ? 0.15 : 1);
+                    let yv = 2.3 * xv + 18 + noise;
+                    x.push(parseFloat(xv.toFixed(1)));
+                    y.push(parseFloat(yv.toFixed(1)));
+                }
+            } else if (currentTab === 'polynomial') {
+                // Generar curva polinomial interesante: y = 0.005 * (x-50)^3 - 0.2*(x-50)^2 + 1.2*x + 50 + ruido
+                for (let i = 0; i < count; i++) {
+                    let xv = Math.random() * 100;
+                    let base = xv - 50;
+                    let noise = (Math.random() - 0.5) * noiseLevel * (type === 'clean' ? 0.15 : 1.5);
+                    let yv = 0.0003 * Math.pow(base, 3) + 0.05 * Math.pow(base, 2) + 2 * base + 40 + noise;
+                    x.push(parseFloat(xv.toFixed(1)));
+                    y.push(parseFloat(yv.toFixed(1)));
+                }
+            }
+            
+            currentData = { x, y };
+            document.getElementById('data-count-badge').textContent = `${x.length} puntos`;
+            runRegression();
+        }
+
+        // GENERACIÓN DE DATOS 3D
+        function generateSynthetic3D() {
+            let x1 = [];
+            let x2 = [];
+            let y = [];
+            
+            const count = 50;
+            for (let i = 0; i < count; i++) {
+                let x1v = Math.random() * 50;
+                let x2v = Math.random() * 50;
+                let noise = (Math.random() - 0.5) * 20;
+                let yv = 2.8 * x1v + 1.4 * x2v + 15 + noise;
+                
+                x1.push(parseFloat(x1v.toFixed(1)));
+                x2.push(parseFloat(x2v.toFixed(1)));
+                y.push(parseFloat(yv.toFixed(1)));
+            }
+
+            currentData3D = { x1, x2, y };
+            document.getElementById('data-count-badge').textContent = `${count} puntos`;
+            runRegression();
+        }
+
+        function updateSlidersAndRegenerate() {
+            document.getElementById('point-count-val').textContent = document.getElementById('param-points').value;
+            document.getElementById('noise-val').textContent = document.getElementById('param-noise').value;
+            generateSyntheticData('noisy');
+        }
+
+        function addUserPoint() {
+            const xVal = parseFloat(document.getElementById('add-x').value);
+            const yVal = parseFloat(document.getElementById('add-y').value);
+
+            if (isNaN(xVal) || isNaN(yVal)) {
+                alert("Por favor introduce valores numéricos válidos para X e Y.");
+                return;
+            }
+
+            currentData.x.push(xVal);
+            currentData.y.push(yVal);
+            document.getElementById('data-count-badge').textContent = `${currentData.x.length} puntos`;
+            
+            // Limpiar inputs
+            document.getElementById('add-x').value = '';
+            document.getElementById('add-y').value = '';
+
+            runRegression();
+        }
+
+        function clearAllData() {
+            if (currentTab === 'multiple') {
+                currentData3D = { x1: [], x2: [], y: [] };
+            } else {
+                currentData.x = [];
+                currentData.y = [];
+            }
+            document.getElementById('data-count-badge').textContent = `0 puntos`;
+            runRegression();
+        }
+
+        // ESCUCHADOR DE ENTRADA DIRECTA DESDE GRÁFICO (PLOTLY CLICK)
+        function setupChartClicks() {
+            const gd = document.getElementById('chart-container');
+            gd.on('plotly_click', function(data){
+                if (currentTab === 'multiple' || currentTab === 'theory') return;
+                
+                let pts = data.points[0];
+                let clickX = parseFloat(pts.x.toFixed(1));
+                let clickY = parseFloat(pts.y.toFixed(1));
+                
+                currentData.x.push(clickX);
+                currentData.y.push(clickY);
+                document.getElementById('data-count-badge').textContent = `${currentData.x.length} puntos`;
+                
+                runRegression();
+            });
+        }
+
+
+        // ALGORITMOS DE AJUSTE DE MODELOS
+        function runRegression() {
+            if (currentTab === 'simple') {
+                const method = document.getElementById('simple-method').value;
+                if (method === 'ols') {
+                    fitSimpleLinearOLS();
+                } else {
+                    fitSimpleLinearGD();
+                }
+            } else if (currentTab === 'polynomial') {
+                fitPolynomial();
+            } else if (currentTab === 'multiple') {
+                fitMultiple3D();
+            }
+        }
+
+        // 1. REGRESIÓN LINEAL SIMPLE - MCO (OLS)
+        function fitSimpleLinearOLS() {
+            const x = currentData.x;
+            const y = currentData.y;
+            const n = x.length;
+
+            if (n < 2) {
+                renderEmptyChart("Se requieren al menos 2 puntos de datos para ajustar un modelo.");
+                return;
+            }
+
+            // Calcular medias
+            let xMean = x.reduce((a, b) => a + b, 0) / n;
+            let yMean = y.reduce((a, b) => a + b, 0) / n;
+
+            // Calcular beta_1 (pendiente) y beta_0 (intercepto)
+            let num = 0;
+            let den = 0;
+            for (let i = 0; i < n; i++) {
+                num += (x[i] - xMean) * (y[i] - yMean);
+                den += Math.pow(x[i] - xMean, 2);
+            }
+
+            let beta1 = den === 0 ? 0 : num / den;
+            let beta0 = yMean - beta1 * xMean;
+
+            // Generar línea de regresión
+            const xMin = Math.min(...x) - 10;
+            const xMax = Math.max(...x) + 10;
+            const xLine = [xMin, xMax];
+            const yLine = xLine.map(val => beta0 + beta1 * val);
+
+            // Calcular métricas
+            const metrics = calculateMetrics(x, y, (val) => beta0 + beta1 * val);
+
+            // Renderizar gráficos 2D
+            plot2D(x, y, xLine, yLine, `Y = ${beta0.toFixed(2)} + ${beta1.toFixed(2)}X`);
+
+            // Mostrar métricas en UI
+            document.getElementById('metric-equation').innerHTML = `$$Y = ${beta0.toFixed(3)} + ${beta1.toFixed(3)}X$$`;
+            document.getElementById('metric-r2').textContent = metrics.r2.toFixed(3);
+            document.getElementById('metric-r2-pct').textContent = `(${(metrics.r2 * 100).toFixed(1)}%)`;
+            document.getElementById('metric-mse').textContent = metrics.mse.toLocaleString('es', { maximumFractionDigits: 2 });
+
+            // Explicación
+            document.getElementById('explainer-title').textContent = "Interpretación: Regresión Lineal Simple MCO";
+            document.getElementById('explainer-text').innerHTML = `La pendiente de la recta es <strong>${beta1.toFixed(2)}</strong>. Esto significa que por cada incremento de una unidad en X, esperamos que Y aumente en aproximadamente ${beta1.toFixed(2)} unidades. El intercepto en <strong>${beta0.toFixed(2)}</strong> estima el valor de Y cuando X es exactamente cero. Con un R² de ${(metrics.r2 * 100).toFixed(1)}%, tu recta lineal logra capturar la variabilidad descrita por los puntos.`;
+
+            // Forzar renderizado de KaTeX de forma segura
+            if (typeof renderMathInElement === 'function') {
+                renderMathInElement(document.getElementById('metric-equation'));
+            }
+        }
+
+        // toggle entre métodos simple
+        function toggleSimpleMethod() {
+            const method = document.getElementById('simple-method').value;
+            const gdBox = document.getElementById('gd-controls');
+            const epochIndicator = document.getElementById('gd-epoch-indicator');
+            
+            if (method === 'gd') {
+                gdBox.classList.remove('hidden');
+                epochIndicator.classList.remove('hidden');
+                initGradientDescent();
+            } else {
+                gdBox.classList.add('hidden');
+                epochIndicator.classList.add('hidden');
+                stopAutoGD();
+                fitSimpleLinearOLS();
+            }
+        }
+
+        // DESCENTE DE GRADIENTE INTERACTIVO (Simple)
+        function initGradientDescent() {
+            stopAutoGD();
+            const x = currentData.x;
+            if (x.length < 2) return;
+            
+            // Inicializar pesos en cero
+            gdState.w = 0.0;
+            gdState.b = 0.0;
+            gdState.currentEpoch = 0;
+            gdState.lossHistory = [];
+            
+            updateGDParams();
+            runRegression();
+        }
+
+        function updateGDParams() {
+            gdState.lr = parseFloat(document.getElementById('param-lr').value);
+            gdState.epochs = parseInt(document.getElementById('param-epochs').value);
+            document.getElementById('lr-val').textContent = gdState.lr;
+            document.getElementById('epochs-val').textContent = gdState.epochs;
+        }
+
+        function stepGradientDescent() {
+            const x = currentData.x;
+            const y = currentData.y;
+            const n = x.length;
+            if (n < 2) return;
+
+            let w = gdState.w;
+            let b = gdState.b;
+            let lr = gdState.lr;
+
+            // Calcular predicciones y gradientes
+            let dw = 0;
+            let db = 0;
+            let cost = 0;
+
+            for (let i = 0; i < n; i++) {
+                let yHat = w * x[i] + b;
+                let diff = yHat - y[i];
+                dw += diff * x[i];
+                db += diff;
+                cost += diff * diff;
+            }
+
+            dw = (2/n) * dw;
+            db = (2/n) * db;
+            cost = cost / n; // MSE
+
+            // Actualizar pesos
+            w = w - lr * dw;
+            b = b - lr * db;
+
+            // Guardar estado
+            gdState.w = w;
+            gdState.b = b;
+            gdState.currentEpoch++;
+            gdState.lossHistory.push(cost);
+
+            // Refrescar visualización sin interrumpir bucle si está activo
+            drawGDStep();
+        }
+
+        function drawGDStep() {
+            const x = currentData.x;
+            const y = currentData.y;
+            const n = x.length;
+            const w = gdState.w;
+            const b = gdState.b;
+
+            // Generar línea de regresión con pesos actuales
+            const xMin = Math.min(...x) - 10;
+            const xMax = Math.max(...x) + 10;
+            const xLine = [xMin, xMax];
+            const yLine = xLine.map(val => w * val + b);
+
+            const metrics = calculateMetrics(x, y, (val) => w * val + b);
+
+            plot2D(x, y, xLine, yLine, `Ajuste Iterativo: Y = ${b.toFixed(2)} + ${w.toFixed(2)}X`);
+
+            // Actualizar Métricas en UI
+            document.getElementById('metric-equation').innerHTML = `$$Y = ${b.toFixed(3)} + ${w.toFixed(3)}X$$`;
+            document.getElementById('metric-r2').textContent = metrics.r2.toFixed(3);
+            document.getElementById('metric-r2-pct').textContent = `(${(metrics.r2 * 100).toFixed(1)}%)`;
+            document.getElementById('metric-mse').textContent = metrics.mse.toLocaleString('es', { maximumFractionDigits: 2 });
+            document.getElementById('gd-epoch-num').textContent = gdState.currentEpoch;
+
+            if (typeof renderMathInElement === 'function') {
+                renderMathInElement(document.getElementById('metric-equation'));
+            }
+
+            // Explicación dinámica de Descenso de Gradiente
+            document.getElementById('explainer-title').textContent = "Profesor de IA: El viaje de Descenso de Gradiente";
+            document.getElementById('explainer-text').innerHTML = `El optimizador está actualizando la pendiente (w = <strong>${w.toFixed(3)}</strong>) y el intercepto (b = <strong>${b.toFixed(3)}</strong>) calculando la derivada parcial de la función de coste. El costo actual es <strong>${metrics.mse.toFixed(2)}</strong>. Al dar pasos proporcionales a $-\\alpha \\cdot \\nabla J$, la línea rota lentamente buscando el mínimo global del tazón tridimensional de error.`;
+        }
+
+        function toggleAutoGD() {
+            const btnText = document.getElementById('auto-gd-text');
+            const btnIcon = document.getElementById('auto-gd-icon');
+
+            if (gdState.isRunning) {
+                stopAutoGD();
+            } else {
+                gdState.isRunning = true;
+                btnText.textContent = "Pausar";
+                btnIcon.classList.add('animate-spin');
+                
+                gdState.intervalId = setInterval(() => {
+                    if (gdState.currentEpoch >= gdState.epochs) {
+                        stopAutoGD();
+                    } else {
+                        stepGradientDescent();
+                    }
+                }, 50); // Ajustar velocidad de visualización de épocas
+            }
+        }
+
+        function stopAutoGD() {
+            gdState.isRunning = false;
+            const btnText = document.getElementById('auto-gd-text');
+            const btnIcon = document.getElementById('auto-gd-icon');
+            if (btnText) btnText.textContent = "Auto";
+            if (btnIcon) btnIcon.classList.remove('animate-spin');
+            if (gdState.intervalId) {
+                clearInterval(gdState.intervalId);
+                gdState.intervalId = null;
+            }
+        }
+
+        function fitSimpleLinearGD() {
+            if (gdState.currentEpoch === 0) {
+                stepGradientDescent();
+            } else {
+                drawGDStep();
+            }
+        }
+
+
+        // 2. REGRESIÓN POLINOMIAL (USANDO ÁLGEBRA MATRICIAL DIRECTA)
+        function changePolyDegree() {
+            document.getElementById('poly-degree-val').textContent = document.getElementById('param-poly-degree').value;
+            runRegression();
+        }
+
+        function fitPolynomial() {
+            const x = currentData.x;
+            const y = currentData.y;
+            const n = x.length;
+            const d = parseInt(document.getElementById('param-poly-degree').value);
+
+            if (n < d + 1) {
+                renderEmptyChart(`Se necesitan al menos ${d + 1} puntos de datos únicos para ajustar un polinomio de grado ${d}.`);
+                return;
+            }
+
+            // Construir matriz de diseño X y vector Y para ajustar MCO multivariable
+            let X_mat = [];
+            for (let i = 0; i < n; i++) {
+                let row = [];
+                for (let power = 0; power <= d; power++) {
+                    row.push(Math.pow(x[i], power));
+                }
+                X_mat.push(row);
+            }
+
+            let Y_vec = y.map(val => [val]);
+
+            // Realizar operaciones matriciales: beta = (X^T * X)^-1 * X^T * Y
+            let XT = matrixTranspose(X_mat);
+            let XTX = matrixMultiply(XT, X_mat);
+            let invXTX = matrixInverse(XTX);
+
+            if (!invXTX) {
+                renderEmptyChart("Error matemático: Matriz no invertible. Comprueba si tienes puntos duplicados o alineados verticalmente.");
+                return;
+            }
+
+            let XTY = matrixMultiply(XT, Y_vec);
+            let beta = matrixMultiply(invXTX, XTY).map(row => row[0]); // Vector de coeficientes
+
+            // Generar curva suave para dibujar la hipótesis polinomial
+            const xMin = Math.min(...x);
+            const xMax = Math.max(...x);
+            const xRange = xMax - xMin;
+            
+            let xLine = [];
+            const steps = 200;
+            for (let i = 0; i <= steps; i++) {
+                xLine.push(xMin - xRange*0.05 + (xRange * 1.1) * (i / steps));
+            }
+
+            let yLine = xLine.map(xv => {
+                let sum = 0;
+                for (let power = 0; power <= d; power++) {
+                    sum += beta[power] * Math.pow(xv, power);
+                }
+                return sum;
+            });
+
+            // Función evaluadora de predicciones polinomiales para cálculo de métricas
+            const polyPredict = (xv) => {
+                let sum = 0;
+                for (let power = 0; power <= d; power++) {
+                    sum += beta[power] * Math.pow(xv, power);
+                }
+                return sum;
+            };
+
+            const metrics = calculateMetrics(x, y, polyPredict);
+
+            plot2D(x, y, xLine, yLine, `Ajuste Polinomial grado ${d}`);
+
+            // Mostrar métricas en UI
+            let formatEq = "Y = ";
+            for (let p = d; p >= 0; p--) {
+                let coef = beta[p];
+                let sign = coef >= 0 ? " + " : " - ";
+                if (p === d) sign = coef >= 0 ? "" : "-";
+                
+                let valStr = Math.abs(coef).toFixed(Math.max(2, 6 - p)); // dar precisión extra a potencias altas
+                if (p === 0) formatEq += `${sign}${valStr}`;
+                else if (p === 1) formatEq += `${sign}${valStr}X`;
+                else formatEq += `${sign}${valStr}X^{${p}}`;
+            }
+
+            document.getElementById('metric-equation').innerHTML = `$$${formatEq}$$`;
+            document.getElementById('metric-r2').textContent = metrics.r2.toFixed(3);
+            document.getElementById('metric-r2-pct').textContent = `(${(metrics.r2 * 100).toFixed(1)}%)`;
+            document.getElementById('metric-mse').textContent = metrics.mse.toLocaleString('es', { maximumFractionDigits: 2 });
+
+            // Explicación de sobreajuste o subajuste polinomial
+            document.getElementById('explainer-title').textContent = `Interpretación: Regresión Polinomial Grado ${d}`;
+            let explText = "";
+            if (d === 1) {
+                explText = "Ajustar un polinomio de grado 1 es equivalente a una regresión lineal simple estándar. Si observas que tus datos curvan en los extremos, este modelo causa <strong>subajuste (underfitting)</strong>.";
+            } else if (d >= 2 && d <= 3) {
+                explText = `El modelo de grado ${d} permite curvar la hipótesis. Esto es ideal para representar aceleración física, crecimiento poblacional, o curvas de coste marginal con flexibilidad media.`;
+            } else {
+                explText = `Con grado ${d}, el polinomio es extremadamente dúctil. Observa cómo en las zonas intermedias zigzaguea para aproximarse a los puntos, y cómo la curva toma comportamientos salvajes e impredecibles en los bordes. Esto es una demostración en vivo de <strong>alta varianza y sobreajuste (overfitting)</strong>.`;
+            }
+            document.getElementById('explainer-text').innerHTML = explText;
+
+            if (typeof renderMathInElement === 'function') {
+                renderMathInElement(document.getElementById('metric-equation'));
+            }
+        }
+
+
+        // 3. REGRESIÓN LINEAL MÚLTIPLE (3D CON DOS VARIABLES)
+        function fitMultiple3D() {
+            const x1 = currentData3D.x1;
+            const x2 = currentData3D.x2;
+            const y = currentData3D.y;
+            const n = x1.length;
+
+            if (n < 3) {
+                renderEmptyChart("Se requieren al menos 3 puntos de datos en 3D para estimar un plano de ajuste.");
+                return;
+            }
+
+            // Construir matrices para resolver beta = (X^T * X)^-1 * X^T * Y
+            let X_mat = [];
+            for (let i = 0; i < n; i++) {
+                X_mat.push([1, x1[i], x2[i]]);
+            }
+
+            let Y_vec = y.map(val => [val]);
+
+            let XT = matrixTranspose(X_mat);
+            let XTX = matrixMultiply(XT, X_mat);
+            let invXTX = matrixInverse(XTX);
+
+            if (!invXTX) {
+                renderEmptyChart("Matriz singular: Las variables explicativas pueden estar colineales.");
+                return;
+            }
+
+            let XTY = matrixMultiply(XT, Y_vec);
+            let beta = matrixMultiply(invXTX, XTY).map(row => row[0]); // beta_0, beta_1, beta_2
+
+            const b0 = beta[0];
+            const b1 = beta[1];
+            const b2 = beta[2];
+
+            // Generar plano de regresión para graficar en 3D
+            const gridCount = 20;
+            const x1Min = Math.min(...x1), x1Max = Math.max(...x1);
+            const x2Min = Math.min(...x2), x2Max = Math.max(...x2);
+
+            let zPlane = [];
+            let x1Plane = [];
+            let x2Plane = [];
+
+            // Preparar vectores de grilla para Plotly
+            for (let i = 0; i < gridCount; i++) {
+                let x1Val = x1Min + (x1Max - x1Min) * (i / (gridCount - 1));
+                x1Plane.push(x1Val);
+            }
+            for (let j = 0; j < gridCount; j++) {
+                let x2Val = x2Min + (x2Max - x2Min) * (j / (gridCount - 1));
+                x2Plane.push(x2Val);
+            }
+
+            // Construir matriz Z del plano
+            for (let j = 0; j < gridCount; j++) {
+                let zRow = [];
+                for (let i = 0; i < gridCount; i++) {
+                    let yPred = b0 + b1 * x1Plane[i] + b2 * x2Plane[j];
+                    zRow.push(yPred);
+                }
+                zPlane.push(zRow);
+            }
+
+            // Calcular Métricas
+            const predict3D = (x1v, x2v) => b0 + b1 * x1v + b2 * x2v;
+            
+            // MSE y R2 manuales para 3D
+            let errorSumSq = 0;
+            let totalSumSq = 0;
+            let yMean = y.reduce((a, b) => a + b, 0) / n;
+
+            for (let i = 0; i < n; i++) {
+                let pred = predict3D(x1[i], x2[i]);
+                errorSumSq += Math.pow(y[i] - pred, 2);
+                totalSumSq += Math.pow(y[i] - yMean, 2);
+            }
+
+            const mse = errorSumSq / n;
+            const r2 = totalSumSq === 0 ? 0 : 1 - (errorSumSq / totalSumSq);
+
+            // Renderizar Gráfico Tridimensional
+            plot3D(x1, x2, y, x1Plane, x2Plane, zPlane);
+
+            // Mostrar métricas en UI
+            document.getElementById('metric-equation').innerHTML = `$$Y = ${b0.toFixed(2)} + ${b1.toFixed(2)}X_1 + ${b2.toFixed(2)}X_2$$`;
+            document.getElementById('metric-r2').textContent = r2.toFixed(3);
+            document.getElementById('metric-r2-pct').textContent = `(${(r2 * 100).toFixed(1)}%)`;
+            document.getElementById('metric-mse').textContent = mse.toLocaleString('es', { maximumFractionDigits: 2 });
+
+            // Explicación
+            document.getElementById('explainer-title').textContent = "Interpretación: Espacio Multivariable en 3D";
+            document.getElementById('explainer-text').innerHTML = `El plano se inclina hacia arriba en el eje X1 a un ritmo de <strong>${b1.toFixed(2)}</strong> unidades por unidad de X1 (con X2 constante), y en el eje X2 a un ritmo de <strong>${b2.toFixed(2)}</strong>. Puedes presionar y arrastrar el ratón sobre el gráfico para rotar el espacio tridimensional y examinar los residuos.`;
+
+            if (typeof renderMathInElement === 'function') {
+                renderMathInElement(document.getElementById('metric-equation'));
+            }
+        }
+
+
+        // FUNCIONES DE ÁLGEBRA MATRICIAL (UTILIDADES PURAS EN JS)
+        function matrixTranspose(matrix) {
+            return matrix[0].map((col, i) => matrix.map(row => row[i]));
+        }
+
+        function matrixMultiply(A, B) {
+            let rowsA = A.length, colsA = A[0].length,
+                rowsB = B.length, colsB = B[0].length;
+            let C = Array(rowsA).fill(0).map(() => Array(colsB).fill(0));
+            for (let r = 0; r < rowsA; r++) {
+                for (let c = 0; c < colsB; c++) {
+                    let sum = 0;
+                    for (let i = 0; i < colsA; i++) {
+                        sum += A[r][i] * B[i][c];
+                    }
+                    C[r][c] = sum;
+                }
+            }
+            return C;
+        }
+
+        // Eliminación de Gauss-Jordan para invertir matrices
+        function matrixInverse(M) {
+            let n = M.length;
+            let A = M.map((row, i) => {
+                let identity = Array(n).fill(0);
+                identity[i] = 1;
+                return [...row, ...identity];
+            });
+            for (let i = 0; i < n; i++) {
+                let maxRow = i;
+                for (let k = i + 1; k < n; k++) {
+                    if (Math.abs(A[k][i]) > Math.abs(A[maxRow][i])) maxRow = k;
+                }
+                let temp = A[i];
+                A[i] = A[maxRow];
+                A[maxRow] = temp;
+                if (Math.abs(A[i][i]) < 1e-10) {
+                    return null; // Matriz singular
+                }
+                let pivot = A[i][i];
+                for (let j = i; j < 2 * n; j++) {
+                    A[i][j] /= pivot;
+                }
+                for (let k = 0; k < n; k++) {
+                    if (k !== i) {
+                        let factor = A[k][i];
+                        for (let j = i; j < 2 * n; j++) {
+                            A[k][j] -= factor * A[i][j];
+                        }
+                    }
+                }
+            }
+            return A.map(row => row.slice(n));
+        }
+
+        // CALCULO DE MÉTRICAS ESTÁNDAR DE AJUSTE (2D)
+        function calculateMetrics(x, y, predictFn) {
+            const n = x.length;
+            if (n === 0) return { mse: 0, r2: 0 };
+
+            let yMean = y.reduce((a, b) => a + b, 0) / n;
+            let sse = 0; // Suma de Errores al Cuadrado
+            let sst = 0; // Suma Total de Cuadrados
+
+            for (let i = 0; i < n; i++) {
+                let pred = predictFn(x[i]);
+                sse += Math.pow(y[i] - pred, 2);
+                sst += Math.pow(y[i] - yMean, 2);
+            }
+
+            let mse = sse / n;
+            let r2 = sst === 0 ? 0 : 1 - (sse / sst);
+
+            return { mse, r2 };
+        }
+
+
+        // RENDERIZADORES DE GRÁFICOS MEDIANTE PLOTLY
+        function plot2D(x, y, xLine, yLine, lineName) {
+            const pointsTrace = {
+                x: x,
+                y: y,
+                mode: 'markers',
+                type: 'scatter',
+                name: 'Puntos Reales',
+                marker: { color: '#6366f1', size: 9, symbol: 'circle' }
+            };
+
+            const lineTrace = {
+                x: xLine,
+                y: yLine,
+                mode: 'lines',
+                name: lineName,
+                line: { color: '#10b981', width: 3 }
+            };
+
+            const layout = {
+                font: { family: 'ui-sans-serif, system-ui, -apple-system' },
+                xaxis: { title: 'Variable Independiente (X)', gridcolor: '#f1f5f9' },
+                yaxis: { title: 'Variable Dependiente (Y)', gridcolor: '#f1f5f9' },
+                margin: { l: 45, r: 15, t: 30, b: 40 },
+                hovermode: 'closest',
+                plot_bgcolor: '#fafafa',
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                legend: { orientation: 'h', y: -0.15 },
+                showlegend: true
+            };
+
+            const config = { responsive: true, displayModeBar: false };
+
+            Plotly.newPlot('chart-container', [pointsTrace, lineTrace], layout, config);
+        }
+
+        function plot3D(x1, x2, y, x1Plane, x2Plane, zPlane) {
+            const scatterTrace = {
+                x: x1,
+                y: x2,
+                z: y,
+                mode: 'markers',
+                type: 'scatter3d',
+                name: 'Muestras Reales',
+                marker: { color: '#6366f1', size: 6, opacity: 0.9 }
+            };
+
+            const surfaceTrace = {
+                x: x1Plane,
+                y: x2Plane,
+                z: zPlane,
+                type: 'surface',
+                name: 'Plano de Regresión',
+                colorscale: 'Viridis',
+                opacity: 0.7,
+                showscale: false
+            };
+
+            const layout = {
+                font: { family: 'ui-sans-serif, system-ui' },
+                scene: {
+                    xaxis: { title: 'Variable X1' },
+                    yaxis: { title: 'Variable X2' },
+                    zaxis: { title: 'Variable Respuesta Y' }
+                },
+                margin: { l: 0, r: 0, t: 0, b: 0 },
+                legend: { orientation: 'h', y: 0.05 },
+                paper_bgcolor: 'rgba(0,0,0,0)'
+            };
+
+            const config = { responsive: true };
+
+            Plotly.newPlot('chart-container', [scatterTrace, surfaceTrace], layout, config);
+        }
+
+        function renderEmptyChart(message) {
+            const trace = {
+                x: [0],
+                y: [0],
+                mode: 'text',
+                text: [message],
+                textfont: { size: 14, color: '#f43f5e' }
+            };
+
+            const layout = {
+                xaxis: { visible: false },
+                yaxis: { visible: false },
+                plot_bgcolor: '#fff1f2',
+                paper_bgcolor: 'rgba(0,0,0,0)'
+            };
+
+            Plotly.newPlot('chart-container', [trace], layout, { responsive: true, displayModeBar: false });
+        }
+    </script>
+</body>
+</html>
